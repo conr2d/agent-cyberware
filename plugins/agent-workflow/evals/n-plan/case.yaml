@@ -1,0 +1,15 @@
+schema_version: "1.1"
+name: n-plan
+tags: ["near-miss"]
+execution:
+  max_turns: 8
+  timeout_seconds: 300
+  allowed_tools: ["Read", "Glob", "Grep", "Skill"]
+  prompt: "Write an implementation plan for adding OAuth login to our web app, broken into small tasks with tests for each."
+graders:
+  - name: cross-model-not-fired
+    type: "tool_used"
+    tool: "Skill"
+    input_match: "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?cross-model\""
+    min: 0
+    max: 0

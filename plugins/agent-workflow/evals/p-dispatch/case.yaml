@@ -1,0 +1,13 @@
+schema_version: "1.1"
+name: p-dispatch
+tags: ["trigger"]
+execution:
+  max_turns: 8
+  timeout_seconds: 300
+  allowed_tools: ["Read", "Glob", "Grep", "Skill"]
+  prompt: "Dispatch an author agent to write the parser for our config format, and set it up so a different agent reviews the result. Outline what you'd send and how; don't run anything."
+graders:
+  - name: cross-model-fired
+    type: "tool_used"
+    tool: "Skill"
+    input_match: "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?cross-model\""

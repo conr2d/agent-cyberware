@@ -1,0 +1,15 @@
+schema_version: "1.1"
+name: n-model-compare
+tags: ["near-miss"]
+execution:
+  max_turns: 8
+  timeout_seconds: 300
+  allowed_tools: ["Read", "Glob", "Grep", "Skill"]
+  prompt: "Our app summarises support tickets with an LLM. Should we use a GPT model or a Claude model for it? Compare them for this use case."
+graders:
+  - name: cross-model-not-fired
+    type: "tool_used"
+    tool: "Skill"
+    input_match: "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?cross-model\""
+    min: 0
+    max: 0
