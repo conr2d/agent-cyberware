@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: h-codex-script
+tags: ["trigger"]
+execution:
+  max_turns: 8
+  timeout_seconds: 300
+  allowed_tools: ["Read", "Glob", "Grep", "Skill"]
+  prompt: "Write a bash script that runs the Codex CLI non-interactively on the contents of prompt.txt and saves the final message and the thread id. Just give me the script, don't run anything."
+graders:
+  - name: skill-fired
+    type: "tool_used"
+    tool: "Skill"
+    input_match: "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?non-interactive\""
+  - name: strict-config
+    type: "regex"
+    pattern: "--strict-config"
+  - name: skip-git
+    type: "regex"
+    pattern: "--skip-git-repo-check"

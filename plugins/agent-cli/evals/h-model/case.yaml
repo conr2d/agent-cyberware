@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: h-model
+tags: ["trigger"]
+execution:
+  max_turns: 8
+  timeout_seconds: 300
+  allowed_tools: ["Read", "Glob", "Grep", "Skill"]
+  prompt: "My script dispatches a quick review to Codex with `codex exec`. Which model and reasoning effort should it pass, and how? Don't run anything."
+graders:
+  - name: skill-fired
+    type: "tool_used"
+    tool: "Skill"
+    input_match: "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?non-interactive\""
+  - name: read-models.md
+    type: "tool_used"
+    tool: "Read"
+    input_match: "\"file_path\"\\s*:\\s*\"[^\"]*references/models\\.md\""

@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: h-agy
+tags: ["trigger", "opt-in"]
+execution:
+  max_turns: 8
+  timeout_seconds: 300
+  allowed_tools: ["Read", "Glob", "Grep", "Skill"]
+  prompt: "In my own shell script I want to run Antigravity's agy CLI on one prompt and get JSON back. What is the command? Don't run anything."
+graders:
+  - name: skill-fired
+    type: "tool_used"
+    tool: "Skill"
+    input_match: "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?non-interactive\""
+  - name: read-agy.md
+    type: "tool_used"
+    tool: "Read"
+    input_match: "\"file_path\"\\s*:\\s*\"[^\"]*references/agy\\.md\""

@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: h-sandbox
+tags: ["trigger"]
+execution:
+  max_turns: 8
+  timeout_seconds: 300
+  allowed_tools: ["Read", "Glob", "Grep", "Skill"]
+  prompt: "I'm going to run `codex exec` inside a bubblewrap sandbox from my orchestrator. What do I need to know? Don't run anything."
+graders:
+  - name: skill-fired
+    type: "tool_used"
+    tool: "Skill"
+    input_match: "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?non-interactive\""
+  - name: read-sandboxed.md
+    type: "tool_used"
+    tool: "Read"
+    input_match: "\"file_path\"\\s*:\\s*\"[^\"]*references/sandboxed\\.md\""

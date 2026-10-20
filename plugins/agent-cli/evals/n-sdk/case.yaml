@@ -1,0 +1,15 @@
+schema_version: "1.1"
+name: n-sdk
+tags: ["near-miss"]
+execution:
+  max_turns: 8
+  timeout_seconds: 300
+  allowed_tools: ["Read", "Glob", "Grep", "Skill"]
+  prompt: "Write a short Python example that calls the Anthropic Messages API with the official SDK."
+graders:
+  - name: skill-not-fired
+    type: "tool_used"
+    tool: "Skill"
+    input_match: "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?non-interactive\""
+    min: 0
+    max: 0
