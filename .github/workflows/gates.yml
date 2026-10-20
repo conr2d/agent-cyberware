@@ -1,0 +1,46 @@
+# The same gates the local hooks run, for commits that arrive without them: a clone with
+# core.hooksPath unset, a merge, a rebase, or a commit made with --no-verify.
+name: gates
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Tree checks
+        run: |
+          if git ls-files | grep -E '(^|/)\.(private|omc|omx)/'; then
+            echo "::error::private context or agent-runtime state is tracked"; exit 1
+          fi
+          ./.githooks/check-citations.py .
+          ./.githooks/check-frontmatter.py .
+          ./.githooks/check-inventory.py .
+
+      - name: Commit messages
+        env:
+          BEFORE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          AFTER: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [ -z "$BEFORE" ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            range="$AFTER"            # new branch or first push: every commit reachable
+          else
+            range="$BEFORE..$AFTER"
+          fi
+          status=0
+          for c in $(git rev-list --no-merges "$range"); do
+            git log -1 --format=%B "$c" > "$RUNNER_TEMP/msg"
+            if ! ./.githooks/commit-msg "$RUNNER_TEMP/msg"; then
+              echo "::error::commit $c"; status=1
+            fi
+          done
+          exit $status
