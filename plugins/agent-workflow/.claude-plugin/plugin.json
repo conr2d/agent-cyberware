@@ -1,0 +1,7 @@
+{
+  "name": "agent-workflow",
+  "description": "Building with agents in separated roles: planning, authoring and review held by different contexts, on different models where you can.",
+  "author": {
+    "name": "Jeeyong Um"
+  }
+}

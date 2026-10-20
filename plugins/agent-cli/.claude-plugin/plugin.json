@@ -1,0 +1,7 @@
+{
+  "name": "agent-cli",
+  "description": "Driving coding-agent CLIs from other programs: non-interactive invocation patterns and the failures that do not look like failures.",
+  "author": {
+    "name": "Jeeyong Um"
+  }
+}

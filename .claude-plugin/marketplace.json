@@ -1,0 +1,37 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "agent-cyberware",
+  "description": "Augmentations for coding agents: driving agent CLIs from programs, a cross-model author/review workflow, and the pass that keeps skills thin.",
+  "owner": {
+    "name": "Jeeyong Um"
+  },
+  "plugins": [
+    {
+      "name": "agent-cli",
+      "description": "Driving coding-agent CLIs from other programs: non-interactive invocation patterns and the failures that do not look like failures.",
+      "author": {
+        "name": "Jeeyong Um"
+      },
+      "source": "./plugins/agent-cli",
+      "category": "development"
+    },
+    {
+      "name": "agent-workflow",
+      "description": "Building with agents in separated roles: planning, authoring and review held by different contexts, on different models where you can.",
+      "author": {
+        "name": "Jeeyong Um"
+      },
+      "source": "./plugins/agent-workflow",
+      "category": "development"
+    },
+    {
+      "name": "agent-skill",
+      "description": "Writing and maintaining skills: the periodic pass that puts each passage in the tier its readers pay for.",
+      "author": {
+        "name": "Jeeyong Um"
+      },
+      "source": "./plugins/agent-skill",
+      "category": "development"
+    }
+  ]
+}

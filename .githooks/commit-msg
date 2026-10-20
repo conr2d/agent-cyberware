@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# The subject grammar and the trailer block, from CONTRIBUTING.md.
+# A rule with no gate is what let every commit before it ignore this one.
+msg="$1"
+fail() { echo "refusing: $1" >&2; exit 1; }
+
+# Cut the scissors section first -- under `git commit -v` everything below it is the raw
+# diff, which is not comment-prefixed -- then let git strip comments, so core.commentChar
+# is honoured rather than assumed.
+body=$(sed '/ >8 /,$d' "$msg" | git stripspace --strip-comments)
+subject=$(printf '%s\n' "$body" | sed '/^$/d' | head -1)
+
+case "$subject" in
+  fixup!*|squash!*|amend!*|Merge\ *|Revert\ *) exit 0 ;;
+esac
+
+printf '%s' "$subject" | grep -qE '^(feat|fix|docs|refactor|chore)\([a-z][a-z0-9-]*\)!?: .' \
+  || fail "subject must be <type>(<scope>)[!]: <intent>, type one of feat|fix|docs|refactor|chore
+  and scope lower-case [a-z][a-z0-9-]*. Got: $subject"
+
+[ "${#subject}" -le 72 ] || fail "subject is ${#subject} characters; keep it to 72"
+
+# Ask git's own parser rather than re-implementing it: if the message carries anything that
+# looks like a trailer, git must actually see it. It does not when a wrapped value's
+# continuation lines are flush left, or when prose follows the block.
+if printf '%s\n' "$body" | grep -qE '^(Reviewed|Not-tested|Lesson|Rejected|Constraint|Scope-risk|Confidence|Assisted-by):'; then
+  seen=$(printf '%s\n' "$body" | git interpret-trailers --parse)
+  [ -n "$seen" ] || fail "git reads no trailers here. The block must be the last paragraph,
+  and a wrapped value's continuation lines must be indented."
+  for k in Reviewed Not-tested Lesson Rejected Constraint Scope-risk Confidence Assisted-by; do
+    if printf '%s\n' "$body" | grep -qE "^$k:" && ! printf '%s\n' "$seen" | grep -qE "^$k:"; then
+      fail "\`$k:\` is in the message but git does not parse it as a trailer"
+    fi
+  done
+fi
+exit 0

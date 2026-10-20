@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+if git diff --cached --name-only -z | grep -qzE '(^|/)\.private/'; then
+  echo "refusing: staged path under .private/ (private context)" >&2
+  exit 1
+fi
+if git diff --cached --name-only -z | grep -qzE '(^|/)\.(omc|omx)/'; then
+  echo "refusing: staged path under agent-runtime state" >&2
+  exit 1
+fi
+
+# No tracked Markdown may carry a line number. Verify the index rather than the working tree, so
+# a partial stage is judged on what is actually being committed, and run it on every commit: it
+# takes about a tenth of a second, and a commit that changes only the checker must not be the one
+# that skips it.  ./.githooks/check-citations.py --show  prints a skill's shape for reading.
+staged=$(mktemp -d) || { echo "refusing: cannot create a temp dir to check the index" >&2; exit 1; }
+trap 'rm -rf "$staged"' EXIT
+git checkout-index -a --prefix="$staged/" || exit 1
+if [ ! -x "$staged/.githooks/check-citations.py" ]; then
+  echo "refusing: .githooks/check-citations.py is missing or not executable in the index" >&2
+  exit 1
+fi
+"$staged/.githooks/check-citations.py" "$staged"
+case $? in
+  0) ;;
+  1) echo "refusing: name the section instead of the line number" >&2; exit 1 ;;
+  *) echo "refusing: the citation check could not run" >&2; exit 1 ;;
+esac
+
+# A SKILL.md is parsed by tools this repository does not control, and a frontmatter one of them
+# rejects is dropped silently: no error, no missing-skill warning, the skill simply is not there.
+# Four rules and no more -- see the checker's own docstring for why it is that small.
+# The messages above the refusal name the rule; this one only says which gate spoke.
+if [ ! -x "$staged/.githooks/check-frontmatter.py" ]; then
+  echo "refusing: .githooks/check-frontmatter.py is missing or not executable in the index" >&2
+  exit 1
+fi
+"$staged/.githooks/check-frontmatter.py" "$staged"
+case $? in
+  0) ;;
+  1) echo "refusing: fix the SKILL.md named above" >&2; exit 1 ;;
+  *) echo "refusing: the frontmatter check could not run" >&2; exit 1 ;;
+esac
+
+# SKILL.md is paid on every invocation, and what has earned that is decided by the admission
+# tests -- which were applied by whoever remembered to. Every skill's references/maintenance.md
+# carries a section inventory with a row per section; a section with no row is refused, and
+# writing the row is the moment the test gets applied. The gate sees only that the row exists.
+if [ ! -x "$staged/.githooks/check-inventory.py" ]; then
+  echo "refusing: .githooks/check-inventory.py is missing or not executable in the index" >&2
+  exit 1
+fi
+"$staged/.githooks/check-inventory.py" "$staged"
+case $? in
+  0) ;;
+  1) echo "refusing: give the section a row, or cut the section" >&2; exit 1 ;;
+  *) echo "refusing: the inventory check could not run" >&2; exit 1 ;;
+esac
