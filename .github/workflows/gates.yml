@@ -36,11 +36,14 @@ jobs:
           else
             range="$BEFORE..$AFTER"
           fi
-          status=0
+          status=0 n=0
           for c in $(git rev-list --no-merges "$range"); do
+            n=$((n + 1))
             git log -1 --format=%B "$c" > "$RUNNER_TEMP/msg"
             if ! ./.githooks/commit-msg "$RUNNER_TEMP/msg"; then
               echo "::error::commit $c"; status=1
             fi
           done
+          # The hook is silent on success, so without this an empty range passes unseen.
+          echo "checked $n commit message(s) in $range"
           exit $status
