@@ -17,6 +17,24 @@ The hooks refuse staged private context and runtime state, Markdown symlinks and
 citations, malformed skill frontmatter, missing or stale section-inventory rows, and invalid
 commit subjects or trailer blocks; see [AGENTS.md](AGENTS.md) for detail.
 
+## Pull requests
+
+`main` is protected: a direct push is refused, so every change lands through a pull request. The
+only merge method is squash, which means the squash commit is what `main` keeps and its message is
+the one that counts — not the messages of the branch's commits.
+
+CI runs the commit-message check on what lands on `main`. GitHub's default squash subject appends
+` (#<number>)` to the pull request title, which can push it past the 72-character limit, and its
+default body lists the branch's commits, which can break the trailer block. Either fails the check
+after the merge.
+
+So whoever merges sets the message explicitly, to the one commit message for the change, written
+to the rules in "Commit messages" below:
+
+```sh
+gh pr merge <number> --squash --subject "<subject>" --body "<body>"
+```
+
 ## Commit messages
 
 Use a [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/) subject:
