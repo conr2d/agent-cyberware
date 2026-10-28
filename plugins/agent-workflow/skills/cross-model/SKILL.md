@@ -106,7 +106,11 @@ project could execute it with no open questions. It must contain, explicitly:
    **stop-and-report on ambiguity, correct-and-report on error — never a suppression or
    workaround that makes a wrong spec line pass.**
 6. **Done-when** — the concrete, observable checks (commands to run, expected outputs) that
-   define success, including boundary/negative cases.
+   define success, including boundary/negative cases. **A check for "no stale reference remains"
+   greps for the exact obsolete reference, in the places it is invalid — never for a common
+   word standing in for it.** Held to a proxy that also matches correct prose, an author
+   rewrites that prose until the check passes. A word-absence check is right only when the
+   requirement is that wording itself, in a named scope.
 7. **Commands** — which commands the author should run to self-verify, and the explicit
    reminder: **do not commit, do not push.**
 
