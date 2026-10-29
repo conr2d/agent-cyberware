@@ -78,7 +78,7 @@ sanctioned way to branch instead.)
 
 - Choosing a model, an effort level, or a fast/default/strong tier → `references/models.md`
 - Suspect anything above is stale, or you want the current values yourself → `references/verify.md`
-- Dispatching any of these into an outer sandbox (bwrap, a container) → `references/sandboxed.md`
+- Dispatching any of these into an outer sandbox (bwrap, srt, a container) → `references/sandboxed.md`
 
 **Additional support, on request only.** Four files, each opened by a caller who has named
 its subject and assumed by nothing here. opencode (`opencode run`, third-party models under

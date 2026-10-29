@@ -262,6 +262,13 @@ reviewer's.
 5. **srt parses the wrapped command's short options without `--`.**
    `srt --settings s.json curl -sS …` fails with `Error: S does not exist.` because `-s`
    means `--settings` to srt. Always put `--` before the wrapped command.
+6. **`git status` inside the lane can report untracked dotfiles the host does not have.**
+   Observed once, 2026-10-28, with `opencode/deepseek-v4.1-flash-free`: the author ran
+   `git status` and reported `.bashrc`, `.gitconfig`, `.mcp.json` and similar at the project
+   root. These are srt's `/dev/null` bind-mounts over dotfiles, described above; the host had
+   none after the run. Tell the author in the spec that they belong to the lane: not stray
+   files to delete, stage or report. (Staging fails in this lane anyway, on `denyWrite` for
+   `.git`.)
 
 What the lane does not do: Unix sockets are not filtered with `allowAllUnixSockets` on, hence
 the deny-read on `/run/user/<uid>`. The provider's domain is reachable, so the project's contents
