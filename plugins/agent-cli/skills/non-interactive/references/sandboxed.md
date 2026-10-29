@@ -2,14 +2,17 @@
 
 > **Opt-in, like `opencode.md`.** `../SKILL.md` documents Claude Code and Codex as a caller
 > meets them on a bare machine. Everything here needs a second confinement layer around the
-> process — a bubblewrap carve-out, a container, a CI runner with its own mount namespace — and
+> process — a bubblewrap or srt carve-out, a container, a CI runner with its own mount namespace — and
 > a reader who is not doing that cannot reach any of it. Open this file when you are dispatching
 > one of these CLIs into a sandbox you built.
 
 **Verified 2026-08-28** — codex-cli 0.150.1, bubblewrap 0.11.2, Linux 6.8; **re-verified
 2026-10-19** on codex-cli 0.163.0 and bubblewrap 0.12.0, every probe below as expected. Both
 traps below were first observed 2026-08-27 by a worker driving Codex under bwrap, and
-re-measured here first-hand before being written down.
+re-measured here first-hand before being written down. **Measured 2026-10-29 under srt** —
+codex-cli 0.165.0, srt (`@anthropic-ai/sandbox-runtime`) 0.0.81, Ubuntu with
+`kernel.apparmor_restrict_unprivileged_userns=1`; both traps reproduced, asserted on files.
+The srt results and their limits are in *Under srt* below.
 
 ## The mechanism, first — it explains both traps
 
@@ -95,7 +98,8 @@ also an earlier signal, printed at startup before any turn:
 warning: Codex's Linux sandbox uses bubblewrap and needs access to create user namespaces.
 ```
 
-Treat that warning as fatal for `workspace-write`; it is the cheapest place to catch this.
+Treat that warning as fatal for `workspace-write` when it appears; it is the cheapest place to
+catch this. A different startup warning preceded the srt failure; see *Under srt* below.
 
 **So when an outer sandbox already confines the process, the inner one is not a second layer but
 a failure mode.** Turning it off with `--sandbox danger-full-access` is not a loosening wherever
@@ -106,9 +110,83 @@ documenting `--dangerously-bypass-approvals-and-sandbox` as *"Intended solely fo
 environments that are externally sandboxed"* — but that the nesting fails **this way**, silently
 and with a success message, is written down nowhere.
 
+## Under srt
+
+**Both traps reproduced 2026-10-29** with the versions and host policy stamped above.
+The project `W` and throwaway home `H` were both under `/var/tmp`. `CODEX_HOME=$H/.codex`
+held only a symlink to `~/.codex/auth.json`. Use `opencode.md`'s *The confined author lane*
+and *Traps under srt* for the outer lane's setup and traps; in particular, its trap 3 explains
+the `network.allowAllUnixSockets=true` setting used here.
+
+For Codex, the settings were this shape. Replace `<repo>`, `<home>`, `<srt-dir>` and `<uid>`
+as in that lane, and keep the settings outside the writable project:
+
+```json
+{"network":{"allowedDomains":["chatgpt.com","*.chatgpt.com","openai.com","*.openai.com"],"deniedDomains":[],"allowAllUnixSockets":true},
+ "filesystem":{"denyRead":["~","/run/user/<uid>"],
+   "allowRead":["~/.codex/packages","~/.codex/auth.json","<srt-dir>"],
+   "allowWrite":["<repo>","<home>"],"denyWrite":["<repo>/.git"]}}
+```
+
+Use the Codex binary's real path under `~/.codex/packages` for `<codex>`:
+`denyRead` hides `~/.local/bin`. The measured command was:
+
+```sh
+cd "$W" && srt --settings /path/to/s.json -- env HOME="$H" CODEX_HOME="$H/.codex" PATH=/usr/bin:/bin \
+  <codex> exec - --skip-git-repo-check --model <model> --sandbox <mode> \
+  -c approval_policy=never -o "$W/report.txt" < prompt
+```
+
+The prompt asked for `target.txt` to be replaced with `EDITED` via shell, then a write to a
+file in another `/var/tmp` directory, and a reply of `DONE` or `BLOCKED`.
+
+| `--sandbox` | runs | exit | `target.txt` | outside write | `-o` report |
+|---|---|---|---|---|---|
+| `workspace-write` | 3 | **0** each | `original` | not attempted (shell never started) | `BLOCKED: … namespace … ENOSPC` all 3 |
+| `danger-full-access` | 1 | 0 | `EDITED` | `Read-only file system` (srt blocked it) | `DONE` |
+
+The failing runs' stderr held:
+
+```
+bwrap: Creating new namespace failed: nesting depth or /proc/sys/user/max_*_namespaces exceeded (ENOSPC)
+```
+
+The startup warning was different from the one in the second trap:
+
+```
+warning: Codex could not find bubblewrap on PATH. … Codex will use the bundled bubblewrap in the meantime.
+```
+
+`/usr/bin` was on `PATH`. That warning was followed by ENOSPC; checking only for the earlier
+warning misses this failure. The model answered `BLOCKED` in all three runs here, versus
+`DONE` in one of five in the 2026-08-28 bwrap measurement. Three runs do not retire the silent
+case: **assert on the file**. **`danger-full-access` is the working setting inside this srt
+lane; srt is what confines it.**
+
+The `-o` trap also reproduced with `danger-full-access`: a report path
+`/var/tmp/<dir>/r.txt` outside `allowWrite`, whose directory existed on the host, gave exit 0,
+target `EDITED`, report **ABSENT**. Stderr held:
+
+```
+Failed to write last message file "…/r.txt": Read-only file system (os error 30)
+```
+
+It was not the last line: `tokens used` and a count followed. Under srt a host path outside
+`allowWrite` is still there but read-only, so this is `Read-only file system`, rather than the bwrap tmpfs
+case's `No such file or directory`.
+
+Read-only auth through the single-file symlink was enough for these runs. **Token refresh,
+which writes `auth.json`, was not exercised.** The four allowed domains were sufficient;
+they were not narrowed further.
+
+An earlier check on **2026-10-28**, with codex-cli 0.165.0 and no model turn, ran
+`codex sandbox` inside the same srt lane: read-only and workspace-write gave the same ENOSPC;
+danger-full-access wrote the project and srt refused the outside write.
+
 ## Verifying this file
 
 The mechanism check costs nothing and settles most of it. The two CLI probes cost one turn each.
+The additional srt pair costs two turns.
 
 ```sh
 # 1. does bwrap nest here at all? (no CLI, no turn)
@@ -142,4 +220,31 @@ bwrap --dev-bind / / --tmpfs /tmp --bind "$W" "$W" --chdir "$W" -- sh -c '
 # target.txt reading EDITED, or a non-zero exit.
 # Swap to --sandbox danger-full-access and it must write correctly — that control is what
 # separates "the inner sandbox blocked it" from "the model did not try".
+
+# 4. srt: workspace-write versus danger-full-access — two model turns
+# Prepare W and H under /var/tmp and s.json as in Under srt and opencode.md's lane.
+# H/.codex must hold only the auth.json symlink. Set CODEX_BIN to the binary's real path
+# under ~/.codex/packages, M to the model, and S to the settings file outside W.
+O=$(mktemp -d -p /var/tmp)
+for mode in workspace-write danger-full-access; do
+  echo original > "$W/target.txt"
+  (cd "$W" && printf '%s\n' \
+    "Replace target.txt with EDITED via shell, then write OUT to $O/$mode.txt. Reply DONE or BLOCKED." \
+    | srt --settings "$S" -- env HOME="$H" CODEX_HOME="$H/.codex" PATH=/usr/bin:/bin \
+      "$CODEX_BIN" exec - --skip-git-repo-check --model "$M" --sandbox "$mode" \
+      -c approval_policy=never -o "$W/$mode-report.txt" \
+      >"$W/$mode-out.txt" 2>"$W/$mode-err.txt")
+  echo "$mode exit=$?"; cat "$W/target.txt" "$W/$mode-report.txt"
+  if [ "$mode" = workspace-write ]; then
+    test "$(cat "$W/target.txt")" = original
+    grep -F ENOSPC "$W/$mode-err.txt"
+  else
+    test "$(cat "$W/target.txt")" = EDITED
+  fi
+  test ! -e "$O/$mode.txt"
+done
+# expected: exit 0 both; workspace-write leaves original, stderr has ENOSPC,
+# report BLOCKED in the three measured runs (the answer is not the assertion).
+# danger-full-access writes EDITED, report DONE; srt refuses the outside write
+# with Read-only file system. Both outside-file absence assertions pass.
 ```
