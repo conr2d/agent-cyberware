@@ -20,3 +20,10 @@ Kept the earlier bwrap measurements and the file assertion rule, qualified the s
 check, and added an srt pair probe. Token refresh and domain narrowing remain unmeasured.
 Recorded the separate, once-observed 2026-10-28 opencode dotfile trap: the spec tells the author
 they belong to the lane. Added srt to the guide's existing opt-in pointer.
+
+### 2026-10-29 — Codex under srt needs only `chatgpt.com`
+
+Narrowed the measured srt settings in `sandboxed.md` from four domains to `chatgpt.com`, after a
+run with only that domain succeeded and a run with none failed loudly, exit 1. Token refresh was
+left unmeasured on purpose: forcing one means altering the real credential, and a rotated
+refresh token could sign the host out.

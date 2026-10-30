@@ -122,7 +122,7 @@ For Codex, the settings were this shape. Replace `<repo>`, `<home>`, `<srt-dir>`
 as in that lane, and keep the settings outside the writable project:
 
 ```json
-{"network":{"allowedDomains":["chatgpt.com","*.chatgpt.com","openai.com","*.openai.com"],"deniedDomains":[],"allowAllUnixSockets":true},
+{"network":{"allowedDomains":["chatgpt.com"],"deniedDomains":[],"allowAllUnixSockets":true},
  "filesystem":{"denyRead":["~","/run/user/<uid>"],
    "allowRead":["~/.codex/packages","~/.codex/auth.json","<srt-dir>"],
    "allowWrite":["<repo>","<home>"],"denyWrite":["<repo>/.git"]}}
@@ -176,8 +176,14 @@ It was not the last line: `tokens used` and a count followed. Under srt a host p
 case's `No such file or directory`.
 
 Read-only auth through the single-file symlink was enough for these runs. **Token refresh,
-which writes `auth.json`, was not exercised.** The four allowed domains were sufficient;
-they were not narrowed further.
+which writes `auth.json`, was not exercised.**
+
+**`chatgpt.com` alone is enough for a ChatGPT sign-in.** The runs in the table allowed
+`chatgpt.com`, `*.chatgpt.com`, `openai.com` and `*.openai.com`; a later `danger-full-access` run
+the same day with only `chatgpt.com` exited 0, wrote `EDITED`, reported `DONE`, and logged no
+connection error. The control, `allowedDomains: []`, is loud: exit 1, target unchanged, no
+report, and stderr holding `failed to refresh available models: Connection failed`. Sign-in with
+an API key was not measured and likely needs another domain.
 
 An earlier check on **2026-10-28**, with codex-cli 0.165.0 and no model turn, ran
 `codex sandbox` inside the same srt lane: read-only and workspace-write gave the same ENOSPC;
