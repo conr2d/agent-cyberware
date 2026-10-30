@@ -137,6 +137,8 @@ failure is loud, which is why it is here rather than above; what it costs is a d
 worked yesterday and a retry that fixes it, or, as with the 3.7 rows here, a driver whose every
 call now fails.
 
+Re-read 2026-10-30 on agy 1.4.10, run by the operator rather than an agent: the same six rows.
+
 With no `--model`, an unpinned run's `init` event omits `model` entirely, so the default is not
 readable back from the envelope (observed on 1.1.16, 1.1.18, 1.1.22 and 1.4.2); a pinned run's
 `init` does name it. **Pin the model explicitly** — the default has rolled before, and agy

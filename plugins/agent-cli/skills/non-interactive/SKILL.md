@@ -29,7 +29,7 @@ claude --resume "<sessionId>"    -p --output-format json --model sonnet < follow
 
 # Codex — --skip-git-repo-check is required outside a git repo. Resume is a subcommand,
 # not a flag, and -p inside exec means --profile.
-codex exec - --model gpt-5.6-terra --json --skip-git-repo-check --strict-config \
+codex exec - --model gpt-6.1-sol --json --skip-git-repo-check --strict-config \
   -c approval_policy=never -c model_reasoning_effort=medium -o out.txt < prompt.txt
 codex exec resume "<threadId>" - --json --skip-git-repo-check --strict-config < followup.txt
 ```

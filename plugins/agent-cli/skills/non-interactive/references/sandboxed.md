@@ -207,7 +207,7 @@ sysctl kernel.unprivileged_userns_clone user.max_user_namespaces \
 # 2. -o into a path the sandbox does not share
 mkdir -p /tmp/reportdir && rm -f /tmp/reportdir/report.txt
 W=$(mktemp -d); bwrap --dev-bind / / --tmpfs /tmp --bind "$W" "$W" --chdir "$W" -- sh -c '
-  echo "Reply with exactly: OK" | codex exec - --skip-git-repo-check --model gpt-5.6-luna \
+  echo "Reply with exactly: OK" | codex exec - --skip-git-repo-check --model gpt-6-luna \
     -o /tmp/reportdir/report.txt >out.txt 2>err.txt
   echo "exit=$?"; test -f /tmp/reportdir/report.txt && echo EXISTS || echo ABSENT
   grep -c "Failed to write last message file" err.txt'
@@ -217,7 +217,7 @@ W=$(mktemp -d); bwrap --dev-bind / / --tmpfs /tmp --bind "$W" "$W" --chdir "$W" 
 W=$(mktemp -d); echo original > "$W/target.txt"
 bwrap --dev-bind / / --tmpfs /tmp --bind "$W" "$W" --chdir "$W" -- sh -c '
   echo "Replace the contents of target.txt with exactly EDITED, then reply DONE." \
-    | codex exec - --skip-git-repo-check --model gpt-5.6-terra \
+    | codex exec - --skip-git-repo-check --model gpt-6.1-sol \
         --sandbox workspace-write -c approval_policy=never >out.txt 2>err.txt
   echo "exit=$?"; tail -1 out.txt; cat target.txt'
 # expected: exit 0 and target.txt still "original". ASSERT ON THE FILE, NOT THE MESSAGE:
