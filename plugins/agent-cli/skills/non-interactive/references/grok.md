@@ -46,6 +46,9 @@ matters. On 2026-10-19 the listing marked `grok-4.7` default beside `grok-4.7-bu
 `grok-4.6`, and runs reported `grok-4.7-build`. Signed out, the same command listed an older
 pair with no error, so read it signed in.
 
+On 2026-10-30, `grok models` signed in on grok 1.0.70 listed default `grok-4.7` beside
+`grok-4.7-build-fast`, `grok-4.6` and `grok-4.5`.
+
 ## Reading the output
 
 `--output-format json` writes one pretty-printed object. Parse all of stdout. A line-oriented

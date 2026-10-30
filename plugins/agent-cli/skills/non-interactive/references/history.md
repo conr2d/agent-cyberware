@@ -27,3 +27,15 @@ Narrowed the measured srt settings in `sandboxed.md` from four domains to `chatg
 run with only that domain succeeded and a run with none failed loudly, exit 1. Token refresh was
 left unmeasured on purpose: forcing one means altering the real credential, and a rotated
 refresh token could sign the host out.
+
+### 2026-10-30 — Codex moves to the 6.x ladder; route by description, not priority
+
+Re-read every model listing. Claude's four aliases map to the same ids as on 2026-10-19. Codex's
+cache, identical under codex-cli 0.165.0 and 0.166.0, now lists `gpt-6.1-sol` and `gpt-6-astra`,
+which ran without rows on 2026-10-19, beside `gpt-6.1-terra`, `gpt-6-luna` and the older 5.6
+family. Each of those 6.x ids and `gpt-reserve` answered at exit 0; a bogus id failed at exit 1.
+The priority integers now put the workhorse above the frontier model, so the routing table follows
+the cache's descriptions: `gpt-6-luna`, `gpt-6.1-sol`, `gpt-6-astra`. `gpt-6.1-terra` names no
+tier and is left out. Runnable examples moved to current ids; dated records kept theirs. grok's
+listing gained `grok-4.5`; opencode still lists `deepseek-v4.1-flash-free`; agy's catalogue was
+re-read by the operator and is unchanged.
