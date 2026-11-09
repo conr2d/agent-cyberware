@@ -39,3 +39,15 @@ the cache's descriptions: `gpt-6-luna`, `gpt-6.1-sol`, `gpt-6-astra`. `gpt-6.1-t
 tier and is left out. Runnable examples moved to current ids; dated records kept theirs. grok's
 listing gained `grok-4.5`; opencode still lists `deepseek-v4.1-flash-free`; agy's catalogue was
 re-read by the operator and is unchanged.
+
+### 2026-11-09 — opencode needs a key handoff; OpenRouter routing reaches the API
+
+A keyed provider exposed what the free-model lane never could: on opencode 2.2.5 (2026-11-05)
+and 2.2.6 (2026-11-09), a throwaway home holding only the `auth.json` symlink has no
+credentials, under srt and without it. Passing the provider's key variable in the srt command's
+`env` works, with only `openrouter.ai` allowed. Where opencode now keeps credentials was not
+established. Added *Routing through OpenRouter*: a model's `options.provider` reaches OpenRouter,
+shown by a ZDR-pinned non-ZDR endpoint failing with a routing funnel and its `zdr: false`
+control passing. `flex` opt-in and other routing keys remain unmeasured. Providers, prices and
+rankings are left out on purpose: they change within days, and the two listing endpoints print
+them. The 2026-10-20 free-model results stay as dated.

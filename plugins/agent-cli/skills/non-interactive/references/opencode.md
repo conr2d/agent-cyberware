@@ -30,7 +30,7 @@ upgrade` updates it; stamp after that, not before.
 | Resume | `-s <sessionID>`; `-c/--continue` for the last one; `--fork` to branch |
 | Model | `-m <provider>/<model>`, effort as `-m <provider>/<model>#<variant>` — `--variant` is gone |
 | Server | a background service by default; `--standalone` for a private one; `--server <url>` to name one |
-| Auth | `opencode auth` (credentials in `~/.local/share/opencode/auth.json`) |
+| Auth | `opencode auth`; `auth.json` alone is insufficient in a 2.2.x throwaway home — see *Traps under srt* |
 
 The provider slug is the one `opencode models` prints, which is not always the vendor's own
 name. `opencode/…` is opencode's own hosted catalog, and its `-free` models need no balance.
@@ -176,9 +176,13 @@ and home in the measurement were both under `/var/tmp`.
    "allowWrite":["<repo>","<home>"],"denyWrite":["<repo>/.git"]}}
 ```
 
-Set `W` to that project and `H` to that throwaway home, and prepare the home's credential
-symlink before running. **Keep `s.json` outside the project** — inside it, the file would sit in
-the author's writable tree and in the reviewer's diff.
+Set `W` to that project and `H` to that throwaway home. The `auth.json` symlink and its
+`allowRead` entry above are what the 2026-10-20 free-model measurement used; they are **not
+enough for a keyed provider on 2.2.5/2.2.6**. For a keyed run, pass the provider's environment
+variable in the `env` list of the srt command below — for OpenRouter, add
+`OPENROUTER_API_KEY="<key>"` beside `HOME` and `PATH`. Read the key at launch from wherever the operator keeps it, without printing it; use the provider's own
+variable and allowed domains. **Keep `s.json` outside the project** — inside it, the file would
+sit in the author's writable tree and in the reviewer's diff.
 
 ```sh
 mkdir -p "$H/.local/share/opencode"
@@ -188,7 +192,7 @@ cd "$W" && srt --settings /path/to/s.json -- env HOME="$H" PATH="$HOME/.opencode
   opencode run --standalone --format json --model <provider>/<model> "<spec>" </dev/null
 ```
 
-Results, asserted on files, exit 0:
+Results of the 2026-10-20 free-model run, asserted on files, exit 0:
 
 - `target.txt` in the project became `EDITED`, through both the write tool and shell.
 - A shell write to another `/var/tmp` directory failed with `Read-only file system`; nothing
@@ -227,14 +231,71 @@ across every project it has run in, so reusing a home for this lane gives it its
 
 Two of the read allowances are not padding. **`allowRead` on `~/.opencode`** makes the binary
 readable, and the explicit `PATH` puts it on the command path. **`allowRead` on
-`~/.local/share/opencode/auth.json`** hands the credential in as a single read-only file,
-symlinked into the throwaway home, so the run can authenticate without being able to rewrite
-what it authenticates as. Allowing the whole directory instead broke the run on 1.18 because
-opencode writes its log there; the single-file form above was measured under srt.
+`~/.local/share/opencode/auth.json`** exposes a single read-only file through the symlink.
+Allowing the whole directory instead broke the run on 1.18 because opencode writes its log
+there; the single-file form above was measured under srt with a free model on 2026-10-20.
+It does not authenticate a keyed provider in a throwaway home on 2.2.5/2.2.6; the environment
+handoff does. The author can read the key either way, so its exposure is the same as with the
+symlinked file; the network allowlist limits where it can go.
 
 **`denyWrite` on `<repo>/.git`** turns *the author does not commit* from an instruction into a
 property: reads keep working, while `git add` fails on the index lock and history stays the
 reviewer's.
+
+### Routing through OpenRouter
+
+The lane **can** route through OpenRouter. **Measured 2026-11-05 on opencode 2.2.5,
+reproduced 2026-11-09 on 2.2.6 with identical outcomes**, under srt 0.0.81 with the lane's
+settings except `allowedDomains: ["openrouter.ai"]`, using
+`openrouter/deepseek/deepseek-v4.1-flash-1017`. The prompt asked to replace `target.txt` with
+`EDITED` and reply `DONE`; results were judged on the file and exit code. With the key passed
+as `OPENROUTER_API_KEY`, `opencode auth list` inside showed
+`OpenRouter  OPENROUTER_API_KEY  environment`, and the run exited 0 with `EDITED`.
+`openrouter.ai` alone was enough; `models.dev` was tried and was not needed.
+
+opencode passes a model's `options.provider` to OpenRouter as its routing object. This config
+goes in the throwaway home's `~/.config/opencode/opencode.json`; the provider slug is an example
+placeholder:
+
+```json
+{
+  "provider": {
+    "openrouter": {
+      "models": {
+        "deepseek/deepseek-v4.1-flash-1017": {
+          "options": {
+            "provider": {
+              "order": ["<provider-slug>"],
+              "allow_fallbacks": false,
+              "zdr": true
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+| pinned to (example) | `zdr` | exit | `target.txt` |
+|---|---|---|---|
+| a ZDR endpoint (`deepinfra/fp8`), no fallback | true | 0 | `EDITED` |
+| a non-ZDR endpoint (`gmicloud/fp8`), no fallback | true | **1** | unchanged |
+| the same non-ZDR endpoint, no fallback | false | 0 | `EDITED` |
+| no pin, no config | — | 0 | `EDITED` |
+
+- **Both `zdr` and `allow_fallbacks` reached OpenRouter.** The failing run's
+  `provider.invalid-request` error event, OpenRouter 404 `No endpoints found for …`, carried
+  its routing funnel: *Filter by Data Policy* removed exactly the endpoints absent from the
+  public ZDR listing; *Filter by Fallback* removed every other endpoint.
+- **`allow_fallbacks: false` fails loudly rather than rerouting**: exit 1 and the error event.
+- **A `flex` endpoint is excluded unless the request opts in.** *Filter by Tier Endpoint Rows*
+  removed the `…/flex` endpoints with `Excluded tier endpoint rows the request did not opt into`.
+  How to opt in was not measured, nor was any other routing key.
+
+Endpoint availability and ZDR status change. Read the current lists from
+`GET https://openrouter.ai/api/v1/models/<author>/<slug>/endpoints` and
+`GET https://openrouter.ai/api/v1/endpoints/zdr`.
 
 ### Traps under srt
 
@@ -269,6 +330,20 @@ reviewer's.
    none after the run. Tell the author in the spec that they belong to the lane: not stray
    files to delete, stage or report. (Staging fails in this lane anyway, on `denyWrite` for
    `.git`.)
+7. **A throwaway home holding only the `auth.json` symlink has no credentials on
+   2.2.5/2.2.6.** Measured on the dates and setup in *Routing through OpenRouter*:
+   `opencode auth list` inside printed `No authenticated integrations`. Without routing config,
+   the run exited 1 with `provider.no-route`,
+   `Model unavailable: openrouter/deepseek/deepseek-v4.1-flash-1017`; with the config above it
+   exited 1 with `provider.auth`, OpenRouter 401 `No cookie auth credentials found`.
+   **This reproduces outside srt**: on 2.2.6 the same home and symlink with
+   `opencode auth list --standalone` and no sandbox also printed `No authenticated integrations`,
+   while the real home listed the OpenRouter key as stored. This is a throwaway-home trap that
+   srt makes common, not an srt failure. Where opencode now keeps credentials was not established.
+   Without `--standalone`, `opencode auth list` in a second home exits 1 on the managed-service
+   port collision, just as `run` does. The earlier lane measurements used only
+   `opencode/…-free` models, which need no key, so did not expose this. Pass the key through the
+   provider's environment variable as above; that run exited 0 and wrote `EDITED`.
 
 What the lane does not do: Unix sockets are not filtered with `allowAllUnixSockets` on, hence
 the deny-read on `/run/user/<uid>`. The provider's domain is reachable, so the project's contents
@@ -381,6 +456,14 @@ env HOME="$H" opencode run --format json --model $M "Reply with exactly: OK" </d
 # expected: exit 1, `Managed service port … already in use` on stderr
 env HOME="$H" opencode run --standalone --format json --model $M "Reply with exactly: OK" </dev/null
 # expected: OK
+
+# auth.json-only throwaway home: no sandbox needed (real home has a stored OpenRouter key)
+H=$(mktemp -d); mkdir -p "$H/.local/share/opencode"
+ln -s "$HOME/.local/share/opencode/auth.json" "$H/.local/share/opencode/auth.json"
+# Exclude the environment handoff so only the symlink is tested.
+env -u OPENROUTER_API_KEY HOME="$H" opencode auth list --standalone
+# expected on 2.2.6: No authenticated integrations
+# If it lists the stored provider, the throwaway-home credential trap is retired.
 
 # the confined lane — ASSERT ON THE FILES
 W=$(mktemp -d -p /var/tmp); echo original > "$W/target.txt"; O=$(mktemp -d -p /var/tmp)
