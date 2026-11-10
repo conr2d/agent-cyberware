@@ -188,7 +188,7 @@ sit in the author's writable tree and in the reviewer's diff.
 mkdir -p "$H/.local/share/opencode"
 ln -s "$HOME/.local/share/opencode/auth.json" "$H/.local/share/opencode/auth.json"
 mkdir -p /tmp/claude
-cd "$W" && srt --settings /path/to/s.json -- env HOME="$H" PATH="$HOME/.opencode/bin:/usr/bin:/bin" \
+cd "$W" && TMPDIR=/tmp srt --settings /path/to/s.json -- env HOME="$H" PATH="$HOME/.opencode/bin:/usr/bin:/bin" \
   opencode run --standalone --format json --model <provider>/<model> "<spec>" </dev/null
 ```
 
@@ -344,6 +344,15 @@ Endpoint availability and ZDR status change. Read the current lists from
    port collision, just as `run` does. The earlier lane measurements used only
    `opencode/…-free` models, which need no key, so did not expose this. Pass the key through the
    provider's environment variable as above; that run exited 0 and wrote `EDITED`.
+8. **A caller `TMPDIR` that `denyRead` covers cuts the network.** srt's source places its
+   proxy sockets under the calling process's temporary directory (`claude-http-*.sock`); that
+   was read, not measured. Measured 2026-11-10 on srt 0.0.81 with `denyRead` on `~` and
+   `/run/user/<uid>`, `allowAllUnixSockets` on, only `example.com` allowed, one `curl`: with
+   the outer `TMPDIR` under `~`, srt exited 0 and `curl https://example.com` failed with
+   `curl: (56) Proxy CONNECT aborted`, code 000. With the outer `TMPDIR=/tmp`, the same run
+   returned 200. Inside, that directory showed only a `claude-empty-…` placeholder. The lane
+   commands set `TMPDIR=/tmp` on the `srt` process for this reason; the wrapped command's own
+   `TMPDIR` is trap 4's.
 
 What the lane does not do: Unix sockets are not filtered with `allowAllUnixSockets` on, hence
 the deny-read on `/run/user/<uid>`. The provider's domain is reachable, so the project's contents
@@ -486,7 +495,7 @@ settings = {
 }
 Path(cfg, "s.json").write_text(json.dumps(settings))
 PYSETTINGS
-(cd "$W" && srt --settings "$C/s.json" -- env HOME="$H" PATH="$HOME/.opencode/bin:/usr/bin:/bin" \
+(cd "$W" && TMPDIR=/tmp srt --settings "$C/s.json" -- env HOME="$H" PATH="$HOME/.opencode/bin:/usr/bin:/bin" \
   opencode run --standalone --format json --model "$M" \
     "Replace the contents of target.txt with exactly EDITED, then run: echo OUT > $O/out.txt" </dev/null)
 test "$(cat "$W/target.txt")" = EDITED

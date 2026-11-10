@@ -51,3 +51,12 @@ shown by a ZDR-pinned non-ZDR endpoint failing with a routing funnel and its `zd
 control passing. `flex` opt-in and other routing keys remain unmeasured. Providers, prices and
 rankings are left out on purpose: they change within days, and the two listing endpoints print
 them. The 2026-10-20 free-model results stay as dated.
+
+### 2026-11-10 — srt's proxy sockets follow the caller's TMPDIR
+
+A separate session reported that a lane with the home deny-read lost its network until the
+outer `TMPDIR` moved to `/tmp`. Re-measured on srt 0.0.81 with one `curl` under the settings
+named in srt trap 8: 200 with the outer `TMPDIR=/tmp`, and code 000 with `Proxy CONNECT
+aborted` with it under `~`. srt itself exited 0 both times. The socket location was read from
+srt's source. Added as srt trap 8, and the lane commands now set `TMPDIR=/tmp` on `srt`. The
+earlier lane measurements here ran with `TMPDIR` unset.
