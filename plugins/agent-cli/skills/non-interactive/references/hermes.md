@@ -17,6 +17,9 @@ has a probe — and stand on their 0.21.0 measurement. The probes are at the end
 rather than in `verify.md`, so a standard pass neither runs them nor is made wrong by them
 going stale.
 
+**Version re-read 2026-11-10:** after `hermes update`, 0.23.1, reported up to date. The
+probes were not re-run on it, so everything below stands on 0.22.2.
+
 **The version drifts the way agy's does.** The install reports its method as `git` and tells you
 how far behind it is on every interactive start (`⚠ N commits behind — run hermes update`), so
 the binary you tested is not necessarily the one that runs tomorrow. Stamp after `hermes update`,
