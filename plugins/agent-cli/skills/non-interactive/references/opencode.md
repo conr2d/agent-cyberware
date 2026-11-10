@@ -11,7 +11,8 @@ not fill the gap for an agent-driven caller, on terms grounds, which is why it i
 does not share a limit with anything else.
 
 **Verified 2026-10-19** — opencode 2.0.32, model `opencode/deepseek-v4.1-flash-free`,
-bubblewrap 0.12.0. Everything below was executed unless it says otherwise. **2.0 is a different
+bubblewrap 0.12.0; **probes re-run 2026-11-10 on 2.2.6**, with two results changed: the
+second-home `run` and `step_finish`, both noted where they are described. Everything below was executed unless it says otherwise. **2.0 is a different
 program from the 1.18 this file was first written against**: `run` now goes through a resident
 background server, three flags are gone, three traps are new or newly found, and the pre-turn
 failures that used to name nothing now name what was wrong. Other providers and models are
@@ -61,12 +62,12 @@ opencode models | grep -i <vendor>
 |---|---|
 | text | last event with `.type == "text"` → `.part.text` |
 | session id | `.sessionID` (on every event; a `-s` resume keeps the same one) |
-| success | exit 0, **no** `error` event, and at least one `text` event — see Traps for why not `step_finish` |
+| success | exit 0, **no** `error` event, and at least one `text` event |
 | failure | exit 1 and an `error` event on stdout: `.error.type` (`provider.no-route`, `provider.quota`, …) and `.error.message`, which names the model or variant at fault |
-| tokens / cost | `step_finish` → `.part.tokens`, `.part.cost` — **when one arrives** |
+| tokens / cost | `step_finish` → `.part.tokens`, `.part.cost` on the final one |
 
 `reason` on a `step_finish` is `"tool-calls"` on the intermediate steps of a tool-using turn
-and `"stop"` on the last, so when they do arrive take the final one. **The exit code now means
+and `"stop"` on the last, so take the final one. **The exit code now means
 something**: every failure measured on 2.0 — unknown model, unknown variant, a provider 402
 before the turn, and an unknown `-s` id, which `--help` says creates the session — exited 1
 with an `error` event. On 1.18 a provider error mid-turn exited 0, and that was the reason the
@@ -86,12 +87,15 @@ none is up. That service is now password-protected: `--server <url>` against it 
 `requires a password; set OPENCODE_PASSWORD`, where 1.18's `opencode serve` printed that it was
 unsecured.
 
-**A second `$HOME` cannot start its own service on the same port, and says so.** Anything that
-runs opencode under a different home — the lane split under *Configure permissions*, a sandbox,
-a CI job — exits **1** with `Managed service port <n> on 127.0.0.1 is already in use by another
-process`, stdout empty. It is loud, and it fails closed: the run does not fall through to the
-machine's own service. **`--standalone` runs a private server for the one call** and is what
-those cases need. Measured cost: about 1.4 s through the service against 2.0 s standalone, for a
+**A second `$HOME` needs `--standalone`.** Anything that runs opencode under a different home —
+the lane split under *Configure permissions*, a sandbox, a CI job — collides with the machine's
+managed service on its fixed port. On 2.0 every command did so loudly: exit **1**, `Managed
+service port <n> on 127.0.0.1 is already in use by another process`, stdout empty. **On 2.2.6
+(2026-11-10) only `auth list` still does.** Four `run`s in a second home without `--standalone`
+exited 0 with the answer while the machine's service held the port, and the session id was found
+in neither home's data directory, so where they ran is unknown. Do not read that exit 0 as the
+run having used the second home. **`--standalone` runs a private server for the one call** and
+is what those cases need. Measured cost: about 1.4 s through the service against 2.0 s standalone, for a
 one-word answer from this model.
 
 What an earlier version of this file warned against — building a serve/attach fast path — is now the default,
@@ -137,7 +141,7 @@ Keys and values come from the published schema (`https://opencode.ai/config.json
 **The block above is written for one lane, and a second lane needs the opposite.** An author
 agent that writes code needs exactly the `edit` and `bash` this denies. Do not loosen the shared
 file to get them: **the config is resolved from `$HOME`**, so a run given its own home gets its
-own permission block. On 2.0 that run also needs **`--standalone`**, or it fails on the service
+own permission block. That run also needs **`--standalone`**; on 2.0 it failed on the service
 port as above. Measured 2026-10-19: a home whose config set `edit` and `bash` to `allow`, run
 with `--standalone`, wrote `shell.txt` through the shell tool, exit 0; the same without
 `--standalone` exited 1 on the port. On 1.18 the lane split was also measured on `edit`; on 2.0
@@ -341,7 +345,7 @@ Endpoint availability and ZDR status change. Read the current lists from
    while the real home listed the OpenRouter key as stored. This is a throwaway-home trap that
    srt makes common, not an srt failure. Where opencode now keeps credentials was not established.
    Without `--standalone`, `opencode auth list` in a second home exits 1 on the managed-service
-   port collision, just as `run` does. The earlier lane measurements used only
+   port collision; on 2.2.6 `run` there no longer does, see *The background server*. The earlier lane measurements used only
    `opencode/…-free` models, which need no key, so did not expose this. Pass the key through the
    provider's environment variable as above; that run exited 0 and wrote `EDITED`.
 
@@ -372,12 +376,10 @@ produced nothing for over ten minutes; the same model with stdin closed failed i
 a 402. **Redirect `</dev/null`** when the prompt is an argument, which is why every canonical
 call above does.
 
-**`step_finish` often never arrives, on a run that succeeded.** On 2.0.32 the final event of a
-healthy one-shot was `text` in most runs measured — three of six in one batch, all six in
-another, exit 0 and the answer present every time. A success test keyed on a final
-`step_finish` with `reason: "stop"`, which is what this file prescribed for 1.18, reports those
-runs as failures. Use the test in *Reading the output*, and treat tokens and cost as
-best-effort.
+*Retired 2026-11-10: a missing `step_finish`.* On 2.0.32 a healthy one-shot often ended on
+`text` instead — three of six in one batch, all six in another. On 2.2.6 eighteen of eighteen
+ended on `step_finish`. The probe below now asserts that, and the success test in *Reading the
+output* holds either way.
 
 **The first run on a home takes much longer than the rest.** Provider and model metadata are
 cached under `$HOME/.cache/opencode/` on first use; on 1.18 a cold first run exceeded 120 s
@@ -429,7 +431,7 @@ sleep 45 | timeout 25 opencode run --format json --model $M "Reply with exactly:
 # step_finish: count how often a healthy run ends without one
 for i in 1 2 3 4 5 6; do opencode run --format json --model $M "Reply with exactly: OK" </dev/null \
   | python3 -c "import json,sys; print([json.loads(l)['type'] for l in sys.stdin if l.strip()][-1])"; done
-# expected, today: a mix of text and step_finish. All step_finish retires the trap.
+# expected since 2.2.6: all step_finish (18 of 18 on 2026-11-10). Any text last brings the trap back.
 
 # failures are loud and named
 opencode run --format json --model opencode/no-such-model-9x "Reply OK" </dev/null
@@ -449,11 +451,14 @@ echo "hello from probe" > sample.txt
 opencode run --format json --model $M "Read sample.txt and reply with its exact contents." </dev/null
 # expected: the reply contains "hello from probe"
 
-# a second home needs --standalone, and fails loudly without it
+# a second home: `run` without --standalone stopped failing on 2.2.6; `auth list` still fails
 H=$(mktemp -d); mkdir -p "$H/.local/share/opencode"
 ln -s ~/.local/share/opencode/auth.json "$H/.local/share/opencode/auth.json"
 env HOME="$H" opencode run --format json --model $M "Reply with exactly: OK" </dev/null
-# expected: exit 1, `Managed service port … already in use` on stderr
+# observed on 2.2.6: exit 0 with OK, location unknown (2.0: exit 1, port already in use).
+# Either way this is not a supported mode; the --standalone line below is.
+env -u OPENROUTER_API_KEY HOME="$H" opencode auth list
+# expected: exit 1, `already in use`
 env HOME="$H" opencode run --standalone --format json --model $M "Reply with exactly: OK" </dev/null
 # expected: OK
 

@@ -6,8 +6,8 @@
 > Why it is here: a grok.com session, or `XAI_API_KEY` when no session is stored, is a quota
 > the Claude and Codex windows do not share.
 
-**Everything below was executed. Last verified: 2026-10-19** — grok 1.0.62, which
-`grok update --check` reported current. Stamp from `grok --version` after that check reports
+**Everything below was executed. Last verified: 2026-11-10** — grok 1.0.77, which
+`grok update --check` reported current; previously verified 2026-10-19 on 1.0.62. Stamp from `grok --version` after that check reports
 the running build current, or after `grok update` when it does not. The probes are at the end
 of this file, not in `verify.md`.
 
@@ -47,7 +47,10 @@ matters. On 2026-10-19 the listing marked `grok-4.7` default beside `grok-4.7-bu
 pair with no error, so read it signed in.
 
 On 2026-10-30, `grok models` signed in on grok 1.0.70 listed default `grok-4.7` beside
-`grok-4.7-build-fast`, `grok-4.6` and `grok-4.5`.
+`grok-4.7-build-fast`, `grok-4.6` and `grok-4.5`. On 2026-11-10, on 1.0.77, it listed the same
+four while printing `You are not authenticated.` above them, although every run that day
+authenticated with the stored session and no `XAI_API_KEY`. Do not read that line as the
+sign-in state; a run is what shows it.
 
 ## Reading the output
 
@@ -59,7 +62,7 @@ reader stops on the opening brace.
 | text | `.text` — the string itself has no trailing newline |
 | session id | `.sessionId` |
 | success | exit 0 and `.stopReason == "end_turn"` |
-| failure before a turn | exit non-zero, always. Auth and model errors also put `{"type":"error","message":…}` on stdout; argument and file errors leave stdout empty and say it on stderr only |
+| failure before a turn | exit non-zero, always. Auth, model and session-id errors also put `{"type":"error","message":…}` on stdout (session ids since 1.0.77); `--prompt-file` errors leave stdout empty and say it on stderr only |
 
 stderr is empty on a successful one-shot run from the directory the session was created in.
 Resuming that session from another directory printed a `found locally` line on stderr and
@@ -110,10 +113,20 @@ call a driver writes when it keeps prompts next to itself and points the run els
 the path absolute.
 
 **`--session-id` creates. Resume is `--resume`.** The id has to be a UUID; `not-a-uuid`
-exits 1 with stdout empty. A second `--session-id` of an id already used exits 1, stdout
-empty, stderr containing `already in use`. The id you pinned is the `.sessionId` echoed
-back, and an id you did not pin is stored too: `--resume` of that echo recalled the previous
-turn. A missing id exits 1, stdout empty, the error on stderr.
+exits 1. A second `--session-id` of an id already used **from the same directory** exits 1,
+with `already in use` on stderr. The id you pinned is the `.sessionId` echoed back, and an id
+you did not pin is stored too: `--resume` of that echo recalled the previous turn. A missing id
+exits 1 after trying, per stderr, to restore it remotely. On 1.0.77 (2026-11-10) each of these three
+failures also writes `{"type":"error","message":…}` to stdout, where 1.0.62 left stdout empty,
+so test the exit code or `.type`, not an empty stdout.
+
+**A reused `--session-id` from another directory is not refused.** Measured 2026-11-10 on
+1.0.77: an id created in one directory, passed to `--session-id` from a second one, exited 0
+and answered as a new conversation, with no memory of the first turn and the same `.sessionId`
+echoed. The directory that counts is the process's own; `--cwd` pointing elsewhere still got
+`already in use`. `--resume` of an id from a fresh directory did find the original (stderr:
+`found locally (originally in <dir>)`) and recalled it. A driver that pins ids must make them
+unique itself.
 
 ## Verifying this file
 
@@ -142,7 +155,13 @@ grok -p "The code word is LARCH. Reply with exactly: OK" --session-id "$SID" --o
 grok -p "What was the code word? Reply with that word only." --resume "$SID" --output-format json
 # expected: OK, then LARCH, and the same .sessionId
 grok -p "Reply NO" --session-id "$SID" --output-format json
-# expected: exit 1, stdout empty
+# expected: exit 1, .type error, `already in use` on stderr (1.0.62: stdout empty)
+(cd "$(mktemp -d)" && grok -p "What was the code word? Reply with that word only, or NONE." \
+  --session-id "$SID" --output-format json)
+# expected: exit 0, .text NONE — a second directory gets a new session under the same id
+grok -p x --session-id not-a-uuid --output-format json
+grok -p x --resume "$(uuidgen)" --output-format json
+# expected: exit 1 each, .type error on stdout
 
 # an unknown model is loud, and the message is on stdout
 grok -p "Reply OK" -m no-such-model-9x --output-format json

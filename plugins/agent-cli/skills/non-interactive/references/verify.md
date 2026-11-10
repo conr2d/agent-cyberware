@@ -58,7 +58,7 @@ done
 ```
 
 The control is the point: a clean exit 0 means the model answered, and an id the binary has no
-metadata for cannot reach one. `models.md` carries what this returned on 2026-10-30, and the
+metadata for cannot reach one. `models.md` carries what this returned on 2026-11-10, and the
 2026-10-19 evidence that a listing can omit ids that run and drop one that no longer does.
 
 ## Whether a Codex config key is real
