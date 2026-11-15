@@ -1,6 +1,6 @@
 ---
 name: non-interactive
-description: Canonical non-interactive (headless) invocation patterns and silent-failure traps for the Claude Code and Codex CLIs, with opt-in references for opencode, hermes, grok, and Antigravity (agy) where its terms allow a driver. Use whenever spawning any of these non-interactively — Bash tool, scripts, CI, or any subprocess driver.
+description: Canonical non-interactive (headless) invocation patterns and silent-failure traps for the Claude Code and Codex CLIs, with opt-in references for opencode, hermes, grok, Devin, and Antigravity (agy) where its terms allow a driver. Use whenever spawning any of these non-interactively — Bash tool, scripts, CI, or any subprocess driver.
 user-invocable: true
 ---
 
@@ -80,12 +80,13 @@ sanctioned way to branch instead.)
 - Suspect anything above is stale, or you want the current values yourself → `references/verify.md`
 - Dispatching any of these into an outer sandbox (bwrap, srt, a container) → `references/sandboxed.md`
 
-**Additional support, on request only.** Four files, each opened by a caller who has named
+**Additional support, on request only.** Five files, each opened by a caller who has named
 its subject and assumed by nothing here. opencode (`opencode run`, third-party models under
 your own API key) is in `references/opencode.md`; hermes (local, quota is whatever provider you
 point it at) is in `references/hermes.md`, which opens with what has to be true before it may be
 driven — read that before dispatching it; grok (`grok -p`, a grok.com session or `XAI_API_KEY`)
-is in `references/grok.md`. All three are the lane for when a subscription window rather than a
+is in `references/grok.md`. Devin (`devin -p`, a Devin account, Cognition's SWE-2 models)
+is in `references/devin.md`. All four are the lane for when a subscription window rather than a
 bug is what stopped you. agy (Antigravity) is in `references/agy.md`, out of the guide on terms
 grounds rather than for lack of coverage: another vendor's agent spawning it is the case they
 reach, so open it only when the driver is agy itself or a person's own script.

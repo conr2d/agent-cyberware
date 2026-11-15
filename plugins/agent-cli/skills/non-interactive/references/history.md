@@ -86,3 +86,24 @@ still exited 1 with an error event, but its message named a stale directory from
 state rather than the session; not written up, since one machine's state produced it.
 
 hermes updated to 0.23.1, version stamped, probes not re-run. agy 1.5.3, read by the operator in one `agy models` listing: the same six rows as 1.4.10; no agy probe was run.
+
+### 2026-11-15 — Devin joins as an opt-in CLI; its stdout is not an envelope
+
+Added `devin.md` and its trigger eval, keeping the surface, traps and probes opt-in.
+Executed on devin 3000.12.57, Free plan, `swe-2-flash-medium`, inside srt 0.0.81:
+version and model listing, trust refusal, discarded stdin and missing prompt, unknown model,
+default and accept-edits tool rejection, accept-edits write, dangerous shell execution,
+export/session round trips and missing-session refusal, stdout joining and startup timing.
+The confined lane used copied credentials and config, a resolved binary, inner proxy handoff
+and a throwaway home. File assertions confirmed inside edits, vanished outside-overlay writes,
+read-only `.git`, blocked off-allowlist network, and session DB/logs confined to that home.
+The empty-CA failure and group-readable credential mode were measured too.
+
+Read from published terms, not executed: the Platform Terms and AUP judgment and data rules
+in `devin.md`; the dated SWE-2 availability announcement is vendor-blog grade.
+Read from `--help` only: `--sandbox`, export-after-each-turn and the `smart` mode description.
+Not measured: `smart` mode, credential rotation, `devin update`, or a paid plan.
+The author evaluation used throwaway synthetic content because the Free plan cannot opt out
+of training. One run per model per task passed every hidden test, preserved protected files,
+reproduced reported test counts and found all planted contradictions; neither flagged the
+unspecified case. Those runs are a dated observation, not a ranking.
