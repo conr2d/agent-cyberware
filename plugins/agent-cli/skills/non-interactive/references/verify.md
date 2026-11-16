@@ -88,8 +88,9 @@ failure; if one stops failing, the trap has been fixed and the guide needs an ed
 # codex: refusal outside a git repo — needs a directory with no .git ABOVE it either.
 # $TMPDIR is the wrong place: one stray `.git` there — an empty directory that git itself
 # rejects still counts — marks every mktemp dir trusted and this probe passes silently.
-cd "$(TMPDIR=/var/tmp mktemp -d)" && echo hi | codex exec - >out.txt 2>err.txt
+D=$(TMPDIR=/var/tmp mktemp -d) && cd "$D" && echo hi | codex exec - >out.txt 2>err.txt
 echo "exit=$?"; wc -c out.txt; cat err.txt
+cd - >/dev/null; rm -rf "${D:?}"
 # expected: exit 1, out.txt 0 bytes, message on stderr
 
 # claude: does a caller-pinned session id survive a resume round trip?

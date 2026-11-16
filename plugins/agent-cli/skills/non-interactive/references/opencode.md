@@ -478,6 +478,7 @@ ln -s "$HOME/.local/share/opencode/auth.json" "$H/.local/share/opencode/auth.jso
 env -u OPENROUTER_API_KEY HOME="$H" opencode auth list --standalone
 # expected on 2.2.6: No authenticated integrations
 # If it lists the stored provider, the throwaway-home credential trap is retired.
+rm -rf "${H:?}"   # removes the symlink, not the auth.json it points at
 
 # the confined lane — ASSERT ON THE FILES
 W=$(mktemp -d -p /var/tmp); echo original > "$W/target.txt"; O=$(mktemp -d -p /var/tmp)
@@ -506,4 +507,5 @@ PYSETTINGS
 test "$(cat "$W/target.txt")" = EDITED
 test -z "$(ls -A "$O")"
 # expected: both assertions pass — target.txt is EDITED, and $O stays empty.
+rm -rf "${W:?}" "${O:?}" "${H:?}" "${C:?}"
 ```
