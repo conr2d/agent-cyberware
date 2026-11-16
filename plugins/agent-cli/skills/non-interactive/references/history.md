@@ -60,3 +60,29 @@ named in srt trap 8: 200 with the outer `TMPDIR=/tmp`, and code 000 with `Proxy 
 aborted` with it under `~`. srt itself exited 0 both times. The socket location was read from
 srt's source. Added as srt trap 8, and the lane commands now set `TMPDIR=/tmp` on `srt`. The
 earlier lane measurements here ran with `TMPDIR` unset.
+
+### 2026-11-10 — Refresh pass: fable rolls, grok scopes session ids by directory, opencode's second home runs
+
+Updated first, then ran `verify.md` top to bottom on Claude Code 2.1.321 and codex-cli 0.167.0;
+versions matched at the end. Every probe held. `fable` now resolves to `claude-fable-5-2`; the
+other aliases are unchanged. Codex's cache has the same ids and descriptions as 2026-10-30, with
+priorities renumbered one to eleven; five 6.x ids and `gpt-reserve` answered at exit 0 and the bogus control
+failed. `gpt-6-astra` was not invoked. The probes that pass no `-m` ran on the local Codex
+default, whatever it is. The Claude envelope still carries every field the guide names.
+
+grok 1.0.77, every probe in `grok.md` run. Two changes: the three `--session-id`/`--resume`
+failures now also write an error object to stdout, and a reused `--session-id` from another
+directory exits 0 as a new conversation under the same id. The second is silent, so it is
+written up as a trap with a probe. `grok models` printed `You are not authenticated.` while
+runs authenticated.
+
+opencode 2.2.6, every probe in `opencode.md` run: surface, open stdin, permission floor,
+loud failures, both home probes and the confined lane, which still wrote `EDITED` and nothing
+outside. Two results changed. Eighteen of eighteen one-shots ended with `step_finish`,
+which by that file's own probe retires the trap; the probe now asserts the fix. `run` in a
+second home without `--standalone` exited 0 four times, with the session id in neither home's
+data directory, while `auth list` there still failed on the port; `--standalone` stays. A `-s` of a missing session
+still exited 1 with an error event, but its message named a stale directory from opencode's own
+state rather than the session; not written up, since one machine's state produced it.
+
+hermes updated to 0.23.1, version stamped, probes not re-run. agy 1.5.3, read by the operator in one `agy models` listing: the same six rows as 1.4.10; no agy probe was run.

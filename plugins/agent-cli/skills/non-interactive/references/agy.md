@@ -138,6 +138,7 @@ worked yesterday and a retry that fixes it, or, as with the 3.7 rows here, a dri
 call now fails.
 
 Re-read 2026-10-30 on agy 1.4.10, run by the operator rather than an agent: the same six rows.
+Re-read 2026-11-10 on agy 1.5.3, also by the operator, in a single listing: the same six rows.
 
 With no `--model`, an unpinned run's `init` event omits `model` entirely, so the default is not
 readable back from the envelope (observed on 1.1.16, 1.1.18, 1.1.22 and 1.4.2); a pinned run's

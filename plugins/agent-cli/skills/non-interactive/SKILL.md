@@ -8,7 +8,7 @@ user-invocable: true
 
 The minimum you need to drive Claude Code or Codex from a subprocess without getting
 it wrong. Everything here was executed, not read off `--help`.
-**Last verified: 2026-10-19** (Claude Code 2.1.303, Codex 0.163.0).
+**Last verified: 2026-11-10** (Claude Code 2.1.321, Codex 0.167.0).
 
 When the CLI disagrees with this file, the CLI is right — see `references/verify.md`.
 

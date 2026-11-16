@@ -1,23 +1,25 @@
 # Models and effort tiers
 
-Cached recommendations. **Values below were true on 2026-10-30** and will rot — if a
+Cached recommendations. **The alias, cache and slug readings below are from 2026-11-10**; the
+effort and fast-mode notes carry no newer measurement. All of it will rot — if a
 suffix matters, re-read them from the CLI first (`verify.md`).
 
 ## Claude Code — `--model <alias|id>`
 
-Re-read on 2026-10-30 with Claude Code 2.1.314 using `verify.md`’s alias loop and
-`modelUsage`; unchanged since 2026-10-19.
+Re-read on 2026-11-10 with Claude Code 2.1.321 using `verify.md`’s alias loop and
+`modelUsage`. `fable` moved from `claude-fable-5-1` to `claude-fable-5-2`; the other three are
+unchanged since 2026-10-19.
 
 | Alias | Full ID |
 |---|---|
 | `opus` | `claude-opus-5-5` |
 | `sonnet` | `claude-sonnet-5-5` |
 | `haiku` | `claude-haiku-5-5` |
-| `fable` | `claude-fable-5-1` |
+| `fable` | `claude-fable-5-2` |
 
 Aliases are stable while the full IDs roll forward, so prefer the alias unless you need to pin
 an exact build. Three of the four rolled between 2026-08-31 and 2026-10-03, `haiku` followed by
-2026-10-19, and no alias moved. `fable` is the Mythos-class tier above Opus. **Each row was
+2026-10-19, `fable` by 2026-11-10, and no alias moved. `fable` is the Mythos-class tier above Opus. **Each row was
 read back from `modelUsage` in the `json` envelope of a real run**, which is the cheapest
 source that states the mapping — `--help` names three aliases as examples and no ids at all, so
 it cannot produce this table.
@@ -34,31 +36,32 @@ Fast mode is interactive-only; in non-interactive JSON it reports
 
 ## Codex — `-m <id>` or `-c model="<id>"`
 
-Read from `~/.codex/models_cache.json` with `verify.md`’s cache reader on 2026-10-30, under
-codex-cli 0.165.0 and again under 0.166.0; the rows were identical:
+Read from `~/.codex/models_cache.json` with `verify.md`’s cache reader on 2026-11-10, under
+codex-cli 0.167.0, `fetched_at` the same day. The ids and descriptions match 2026-10-30; the
+priorities are now one to eleven with no ties:
 
 | Priority | ID | Note |
 |---|---|---|
 | 1 | `gpt-6.1-sol` | latest workhorse model for coding and everyday work |
 | 2 | `gpt-6-astra` | frontier intelligence for the most demanding work |
-| 2 | `gpt-6-chat-thinking` | GPT-6 Chat Thinking for the paid CCA experiment |
-| 3 | `gpt-6.1-terra` | GPT-6.1 Terra Codex model; description names no tier |
-| 4 | `gpt-6-sol` | previous generation workhorse model |
-| 4 | `gpt-reserve` | fast and affordable agentic coding model |
-| 5 | `gpt-6-luna` | fast and affordable model for easier tasks |
-| 6 | `gpt-5.6-sol` | older generation workhorse model |
-| 8 | `gpt-5.6-terra` | older balanced model for straightforward work |
-| 9 | `gpt-5.6-luna` | older fast and efficient model |
-| 43 | `codex-auto-review` | automatic approval review model for Codex |
+| 3 | `gpt-6-chat-thinking` | GPT-6 Chat Thinking for the paid CCA experiment |
+| 4 | `gpt-6.1-terra` | GPT-6.1 Terra Codex model; description names no tier |
+| 5 | `gpt-6-sol` | previous generation workhorse model |
+| 6 | `gpt-reserve` | fast and affordable agentic coding model |
+| 7 | `gpt-6-luna` | fast and affordable model for easier tasks |
+| 8 | `gpt-5.6-sol` | older generation workhorse model |
+| 9 | `gpt-5.6-terra` | older balanced model for straightforward work |
+| 10 | `gpt-5.6-luna` | older fast and efficient model |
+| 11 | `codex-auto-review` | automatic approval review model for Codex |
 
-**Priority numbers no longer follow the tiers.** The workhorse now sorts above the
-frontier model. Read the cache's descriptions, not its integers, to choose a tier.
+**Priority numbers do not follow the tiers.** The workhorse sorts above the frontier model.
+Read the cache's descriptions, not its integers, to choose a tier.
 
 **A model absent from the cache may still run.** The rows with a priority are the local cache,
 and the cache is a listing rather than a contract: on 2026-10-19, with a `fetched_at` minutes
 old, `gpt-6.1-sol` and `gpt-6-astra` carried no row there and each returned a completed turn at
 exit 0 with no fallback-metadata warning, as two ids left unnamed had on 2026-10-03. Both
-`gpt-6.1-sol` and `gpt-6-astra` have cache rows as of 2026-10-30.
+`gpt-6.1-sol` and `gpt-6-astra` have cache rows as of 2026-11-10.
 An id the binary genuinely does not know is loud instead — exit 1, `Model metadata for ... not
 found. Defaulting to fallback metadata` as an error item on stdout, then a 400 from the server.
 **So settle a slug by invoking it, not by its absence here**, and do not read a dropped row as
@@ -70,14 +73,13 @@ were not re-probed, so their status is unknown rather than removed. The same goe
 `gpt-5.3-codex`, `gpt-5.2-codex`, `gpt-5.2`, `gpt-5.1-codex-max` and `gpt-5.1-codex-mini`,
 which a previous pass recorded as unusable on the strength of their absence alone.
 
-On 2026-10-30, `verify.md`’s slug probe at effort `low`, with a ChatGPT sign-in,
-returned exit 0, no metadata warning and `OK` for `gpt-6.1-sol`, `gpt-6-astra`,
-`gpt-6.1-terra`, `gpt-6-luna` and `gpt-reserve`. The control `no-such-model-9x`
-returned exit 1, `Model metadata for ... not found`, then *"The 'no-such-model-9x'
-model is not supported when using Codex with a ChatGPT account."* `gpt-6-chat-thinking`,
-`gpt-6-sol` and the 5.6 family were not invoked in this pass.
+On 2026-11-10, `verify.md`’s slug probe with a ChatGPT sign-in returned exit 0 and no metadata
+warning for `gpt-6.1-sol`, `gpt-6-chat-thinking`, `gpt-6.1-terra`, `gpt-6-sol`, `gpt-reserve`
+and `gpt-6-luna`. The control `no-such-model-9x` returned exit 1 with `Model metadata for ...
+not found`. `gpt-6-astra` was not invoked in this pass; it last returned `OK` on 2026-10-30.
+The 5.6 family and `codex-auto-review` have not been invoked.
 
-Effort — `-c model_reasoning_effort=<level>`, per the same 2026-10-30 cache's own
+Effort — `-c model_reasoning_effort=<level>`, per the same 2026-11-10 cache's own
 `supported_reasoning_levels`:
 
 | Models | Levels |
@@ -101,7 +103,7 @@ For a driver that classifies work as fast / default / strong:
 |---|---|---|
 | `fast` | `haiku` | `gpt-6-luna` (or `gpt-reserve`) |
 | `default` | `sonnet` | `gpt-6.1-sol` |
-| `strong` | `opus` | `gpt-6-astra` |
+| `strong` | `opus` | `gpt-6-astra` (last invoked 2026-10-30) |
 
 **Each tier picks a model, on both.** Every vendor ships its own three-rung ladder and the
 hint maps onto it directly — Codex's cache descriptions name *frontier, most demanding* /
