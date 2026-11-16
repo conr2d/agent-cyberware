@@ -86,3 +86,49 @@ still exited 1 with an error event, but its message named a stale directory from
 state rather than the session; not written up, since one machine's state produced it.
 
 hermes updated to 0.23.1, version stamped, probes not re-run. agy 1.5.3, read by the operator in one `agy models` listing: the same six rows as 1.4.10; no agy probe was run.
+
+### 2026-11-15 — Devin joins as an opt-in CLI; its stdout is not an envelope
+
+Added `devin.md` and its trigger eval, keeping the surface, traps and probes opt-in.
+Executed on devin 3000.12.57, Free plan, `swe-2-flash-medium`, inside srt 0.0.81:
+version and model listing, trust refusal, discarded stdin and missing prompt, unknown model,
+default and accept-edits tool rejection, accept-edits write, dangerous shell execution,
+export/session round trips and missing-session refusal, stdout joining and startup timing.
+The confined lane used copied credentials and config, a resolved binary, inner proxy handoff
+and a throwaway home. File assertions confirmed inside edits, vanished outside-overlay writes,
+read-only `.git`, blocked off-allowlist network, and session DB/logs confined to that home.
+The empty-CA failure and group-readable credential mode were measured too.
+
+Read from published terms, not executed: the Platform Terms and AUP judgment and data rules
+in `devin.md`; the dated SWE-2 availability announcement is vendor-blog grade.
+Read from `--help` only: `--sandbox`, export-after-each-turn and the `smart` mode description.
+Not measured: `smart` mode, credential rotation, `devin update`, or a paid plan.
+The author evaluation used throwaway synthetic content because the Free plan cannot opt out
+of training. One run per model per task passed every hidden test, preserved protected files,
+reproduced reported test counts and found all planted contradictions; neither flagged the
+unspecified case. Those runs are a dated observation, not a ranking.
+
+### 2026-11-16 — Devin on Pro: account state is cached, AGENTS.md is injected
+
+Extended `devin.md` with Pro measurements on devin 3000.12.57, 2026-11-15/16, in the same
+srt 0.0.81 lane. Executed: Pro model listing and `swe-2-medium`/`swe-2-high` runs, stale
+plan refusal despite Pro status and available models, and recovery after moving four cache
+files aside. After the account holder's training opt-out, refreshed the separate telemetry
+cache and observed `Telemetry: disabled (zero-data-retention)`. Read from the vendor's
+security documentation, not executed by the driver: the web app's Data Controls is the
+opt-out location.
+
+Executed: unasked `AGENTS.md` injection into an `always-on` rule, its effect on stdout and
+the resumed turn, and resume combining a prompt file, another model, trust override and
+export. Added the injection and cross-model resume probes; resume needs the same home.
+Extended the author results with the same three synthetic tasks on Pro and the rubric-scored
+design task; kept the Free-plan results dated and clarified that Pro content was synthetic too.
+
+**Observed in a second lane, not reproduced here:** bwrap export truncation at compaction,
+its repeated-tool-definition bulk, web-tool deny rules that do not cover the shell, leaving
+network policy to the outer sandbox, and built-in skills/subagents that the brief must bind. The long design run on a
+compiler codebase is also second-lane evidence, including the owner's judgment and the
+reproducing citations and measurements alongside the two reasoning errors.
+
+Not measured: the cache refresh timer, quota draw of `Free`-marked models, `smart` mode,
+`devin update`, or credential rotation. One run each, not a ranking.

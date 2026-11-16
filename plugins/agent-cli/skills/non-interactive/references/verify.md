@@ -8,9 +8,9 @@ Every fact in `../SKILL.md` and `models.md` came from one of the commands below.
 relevant one instead of trusting a cached value.
 
 Scope: the two CLIs in `../SKILL.md`, on a bare machine. **`opencode.md`, `hermes.md`,
-`grok.md`, `sandboxed.md` and `agy.md` each carry their own probes**, deliberately not here — a
+`grok.md`, `devin.md`, `sandboxed.md` and `agy.md` each carry their own probes**, deliberately not here — a
 standard pass does not run them, and their facts going stale does not make this file wrong. Run
-those when opencode, hermes, grok, an outer sandbox, or agy is what you are checking.
+those when opencode, hermes, grok, devin, an outer sandbox, or agy is what you are checking.
 
 ## Versions
 

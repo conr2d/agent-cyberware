@@ -22,7 +22,7 @@ config keys) belong behind a command in `verify.md`. Recommendations that are us
 perishable go in `models.md` with a date on them.
 
 **A fourth tier exists as of 2026-08-27: opt-in files.** `opencode.md`, `hermes.md`,
-`grok.md`, `sandboxed.md` and `agy.md` are each referenced from `../SKILL.md` by a single line
+`grok.md`, `devin.md`, `sandboxed.md` and `agy.md` are each referenced from `../SKILL.md` by a single line
 and opened only when the caller has named the thing they cover. Everything about them — surface,
 traps, config, probes — lives in the one file, so a standard pass neither runs their probes nor
 is made wrong by them going stale.
@@ -33,6 +33,9 @@ Two kinds qualify, and the test is the same in both: **who can reach it.**
   is the caller's own API key, so it survives a Codex window the other lanes do not. hermes
   joined on the same ground 2026-09-03: local, and its quota is whatever provider it is pointed
   at, which is what makes a promotional offer on some third CLI worth wiring up at all.
+  devin joined on 2026-11-15 on the same ground: a Devin account's quota and a model lineage
+  (SWE-2, from Kimi K3) none of the other lanes share, which is provider diversity for an
+  author lane.
 - *A precondition the guide's reader does not have.* `sandboxed.md` needs an outer confinement
   layer; on a bare machine, following the canonical commands, none of it is reachable.
   `agy.md` needs a caller Antigravity's terms permit, which the reader of this skill usually
@@ -101,7 +104,7 @@ only that a row is present; whether it is true is what an `agent-skill:tiered` p
 | Canonical commands | The exact call per CLI, carrying the flags whose absence fails silently — `--skip-git-repo-check`, `--strict-config`, a pinned `--session-id`. Assembling these from `--help` is precisely how the traps below get reached. |
 | Reading the output | Which field carries the text, the session id and the success verdict, per CLI and per format. A success check written against the wrong field is the failure this skill exists for, and no one document states both shapes. |
 | Traps — none of these look like failures to a driver | The core of the skill, and the one thing no `--help` will ever supply: a flag's documentation says what it does and never what it does wrong. Each entry names an exit code, a stream, and a field the caller would have believed. |
-| Going further | The pointers to the reference files, and the one-line naming of the opt-in files. That line is the entire mechanism by which opencode, hermes, grok, sandbox and agy coverage cost nothing on an ordinary invocation. It is also the only place a reader learns that agy is out on terms grounds rather than missing, which is what stops a session assembling the calls from `--help` instead. The hermes pointer earns its clause the same way and is held to the same limit: it says a precondition exists and does not say what it is, because the frontmatter names hermes only so the skill fires for a caller who asks, and says nothing of the precondition, so this line is the only notice a session gets that the file has to be read before that CLI is driven. **What the precondition actually is belongs to `hermes.md` alone** — a review on 2026-09-03 found the unattended-execution fact itself restated here and removed it, which is the leak this row exists to keep out. **It deliberately does not point here**, unlike the sibling plugins' skills: a maintainer's pointer in a caller-facing list is paid by every caller who will never edit, and an updater arrives through this file's own procedure or through the notice at the top of `verify.md`, which is where a re-verification pass starts. Recorded so the absence is not read as an omission and filled in. |
+| Going further | The pointers to the reference files, and the one-line naming of the opt-in files. That line is the entire mechanism by which opencode, hermes, grok, devin, sandbox and agy coverage cost nothing on an ordinary invocation. It is also the only place a reader learns that agy is out on terms grounds rather than missing, which is what stops a session assembling the calls from `--help` instead. The hermes pointer earns its clause the same way and is held to the same limit: it says a precondition exists and does not say what it is, because the frontmatter names hermes only so the skill fires for a caller who asks, and says nothing of the precondition, so this line is the only notice a session gets that the file has to be read before that CLI is driven. **What the precondition actually is belongs to `hermes.md` alone** — a review on 2026-09-03 found the unattended-execution fact itself restated here and removed it, which is the leak this row exists to keep out. **It deliberately does not point here**, unlike the sibling plugins' skills: a maintainer's pointer in a caller-facing list is paid by every caller who will never edit, and an updater arrives through this file's own procedure or through the notice at the top of `verify.md`, which is where a re-verification pass starts. Recorded so the absence is not read as an omission and filled in. |
 
 ## Update procedure
 
@@ -117,7 +120,7 @@ only that a row is present; whether it is true is what an `agent-skill:tiered` p
    and is stamped in `hermes.md`: its install announces on every start how far behind it is, so
    a pass that has not run `hermes update` first is measuring a version nobody will be running.
    **grok is stamped in `grok.md`**, from `grok --version` after `grok update --check` reports
-   that build current.
+   that build current. **devin is stamped in `devin.md`**, from `devin --version`.
 1. Run everything in `verify.md`, top to bottom.
 2. Any behaviour probe that *stops* failing means a trap was fixed upstream — remove it
    from `../SKILL.md` rather than leaving a stale warning. **Keep the probe and invert it**,
