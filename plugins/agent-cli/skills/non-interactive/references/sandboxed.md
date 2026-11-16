@@ -253,4 +253,5 @@ done
 # report BLOCKED in the three measured runs (the answer is not the assertion).
 # danger-full-access writes EDITED, report DONE; srt refuses the outside write
 # with Read-only file system. Both outside-file absence assertions pass.
+rm -rf "${O:?}"   # and W and H once nothing else reads them
 ```
