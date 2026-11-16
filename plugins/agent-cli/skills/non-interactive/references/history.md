@@ -107,3 +107,28 @@ The author evaluation used throwaway synthetic content because the Free plan can
 of training. One run per model per task passed every hidden test, preserved protected files,
 reproduced reported test counts and found all planted contradictions; neither flagged the
 unspecified case. Those runs are a dated observation, not a ranking.
+
+### 2026-11-16 — Devin on Pro: account state is cached, AGENTS.md is injected
+
+Extended `devin.md` with Pro measurements on devin 3000.12.57, 2026-11-15/16, in the same
+srt 0.0.81 lane. Executed: Pro model listing and `swe-2-medium`/`swe-2-high` runs, stale
+plan refusal despite Pro status and available models, and recovery after moving four cache
+files aside. After the account holder's training opt-out, refreshed the separate telemetry
+cache and observed `Telemetry: disabled (zero-data-retention)`. Read from the vendor's
+security documentation, not executed by the driver: the web app's Data Controls is the
+opt-out location.
+
+Executed: unasked `AGENTS.md` injection into an `always-on` rule, its effect on stdout and
+the resumed turn, and resume combining a prompt file, another model, trust override and
+export. Added the injection and cross-model resume probes; resume needs the same home.
+Extended the author results with the same three synthetic tasks on Pro and the rubric-scored
+design task; kept the Free-plan results dated and clarified that Pro content was synthetic too.
+
+**Observed in a second lane, not reproduced here:** bwrap export truncation at compaction,
+its repeated-tool-definition bulk, web-tool deny rules that do not cover the shell, leaving
+network policy to the outer sandbox, and built-in skills/subagents that the brief must bind. The long design run on a
+compiler codebase is also second-lane evidence, including the owner's judgment and the
+reproducing citations and measurements alongside the two reasoning errors.
+
+Not measured: the cache refresh timer, quota draw of `Free`-marked models, `smart` mode,
+`devin update`, or credential rotation. One run each, not a ranking.
