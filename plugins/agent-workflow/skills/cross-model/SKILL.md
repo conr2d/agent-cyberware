@@ -159,10 +159,11 @@ afterwards.
   fix carrying a lesson a later unit would otherwise re-learn: it gets its own commit, with a
   `Lesson:` trailer.
 - **`Assisted-by:`, one line per agent that contributed, reviewer included.** The kernel's form
-  (`Documentation/process/coding-assistants.rst`) narrowed: the agent's name, a colon, the
-  **model id it was actually run as**, and nothing else — no email, no display name, and none of
-  the analysis tools the kernel would allow after it. A reviewer-only seal carries just the
-  reviewer's line, and **no agent gets `Co-Authored-By:` or `Signed-off-by:`**.
+  (`Documentation/process/coding-assistants.rst`) narrowed: the agent's name, in the one spelling
+  the repository keeps for it, a colon, the **model id it was actually run as**, and nothing
+  else — no email, no display name, and none of the analysis tools the kernel would allow after
+  it. A reviewer-only seal carries just the reviewer's line, and **no agent gets
+  `Co-Authored-By:` or `Signed-off-by:`**.
 
   ```
   Assisted-by: Codex:gpt-6.1-sol
