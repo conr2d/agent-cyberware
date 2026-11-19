@@ -118,7 +118,7 @@ done
 ```
 
 *Run 2026-08-21, codex-cli 0.147.0, verbatim: `accepted` for `model_reasoning_effort="low"`,
-`REJECTED` for `suspected_key=1`.*
+`REJECTED` for `suspected_key=1`. Re-run 2026-11-18, codex-cli 0.169.1: the same two lines.*
 
 (Empty stdin makes this cost nothing: an accepted key gets as far as `No prompt provided via
 stdin` and stops before a turn runs.)
@@ -141,7 +141,8 @@ for m in d['models']:
 ```
 
 *Run 2026-08-22, codex-cli 0.147.0, verbatim: exit 0, printing `fetched_at` and then one line per
-model.*
+model. Re-run 2026-11-18, codex-cli 0.169.1: the same shape, exit 0, `fetched_at` and then one
+line per model.*
 
 **That cache is a listing, not a contract.** A model absent from it can still run. One dispatched
 by id returned a completed turn at exit 0 with no fallback-metadata item, while the block above
@@ -161,6 +162,19 @@ needs to hold more than its spec can carry — larger refactors, anything spanni
 conventions — and step the effort down with it, to a middle level rather than the new tier's
 maximum. That pairing is a statement about this workflow rather than about any particular model,
 and it survives the catalog changing under it.
+
+**A design the reviewer has settled but cannot fully check against the repo is also one its spec
+cannot carry, whatever the unit's size.** A design error reads as unambiguous, and every Done-when
+check written against it passes, so the response rule reaches it only through an author that
+*sees* the pre-decided choice colliding with the repo's own reality, and reports it under that
+rule. Seeing it plausibly takes more than a small tier, so step up a tier for such a unit: a
+stronger author may surface the collision before code rests on it, and what follows is *Roles*'
+to say. The larger
+tier's price at a middle effort is measured further down this section, on one narrow unit. A
+design not yet settled is a different case: the loop does not apply to it at all. *Operator-reported
+2026-11-18, across repositories in active use, with authors from a different family than the
+reviewer; not executed here, no smaller-tier comparison, and no run particulars recorded yet — the
+tier argument is reasoned from that report, not measured.*
 
 **Both dials are set here, on every dispatch** — which is why the command blocks in this file
 leave `<effort>` a placeholder beside `<model>`. A literal in a block that gets copied outranks a
