@@ -141,3 +141,40 @@ described less than the practice it governs. Found by a cold review of the next 
 had moved an example under that precedent. The step now allows both, and holds the example to a
 run that succeeded with the documented result: a run stopped by auth or a quota limit has
 executed the command and shown nothing about the model.
+
+### 2026-11-18 — Codex's 6.2 generation takes the default and strong rungs
+
+Updated first, against a previous stamp of 2.1.321 and 0.167.0: the installed Claude Code
+2.1.327 was already current, and codex-cli went from 0.169.1 to 0.170.0; both matched at the
+end. Then ran `verify.md` top to bottom. Every probe held, and no trap changed,
+so `SKILL.md` changed only in its stamp and its runnable Codex example, which moved to
+`gpt-6.2-sol` after that exact command ran: exit 0, `OK` in `-o`, the four documented events.
+That same run showed no `model:` line on stderr in the `--json` form, as the guide says.
+
+Claude's four aliases map to the same ids as on 2026-11-10. Codex's cache now has thirteen rows:
+`gpt-6.2-sol` and `gpt-6.2-astra` are new, and its descriptions call `gpt-6.1-sol` and
+`gpt-6-astra` *previous generation*. The routing table follows the descriptions:
+`gpt-6.2-sol` for default, and `gpt-6.2-astra` for strong. **The strong row is listing-grade,
+not execution-grade**: neither astra model was invoked, and the operator judged a cache row
+with a level list sufficient for this pass. Seven ids answered at exit 0 and the bogus control
+failed as documented. `gpt-6.1-terra`'s description now names a specialty rather than a rung,
+and it stays out of the routing table.
+
+The first config-key run failed on every row but the rejected one, from a subscription usage
+limit: exit 1 with the reset time in the message. That matches the documented message and exit
+code; the plain output cannot show the `error`-then-`turn.failed` event order, and it says
+nothing about the keys. Re-run after the reset gave accepted, accepted, REJECTED, FAILED. An
+API-key lane tried in between failed on an expired key and contributed no result. No opt-in
+file was re-probed.
+
+A second review, on another model family, found three things this pass then changed. The cache
+reader in `verify.md` did not print the descriptions the routing table relies on, so a reader
+could not reproduce it; it prints them now. The descriptions in `models.md` were read from the
+2026-11-18 cache outside that reader. On 2026-11-19 the amended reader ran against a cache
+fetched that day, still thirteen rows, and every row's description matched its note in the table
+at the same priority. `models.md` said both ladders continue above `strong`, but Codex's example
+was the same model at a higher effort, which its own routing rule calls a dial and not a rung;
+it now says only Claude's does. And moving `SKILL.md`'s runnable
+example had followed the 2026-10-30 precedent while step 4 of the update procedure said
+`SKILL.md` changes only for a shape or a trap. The operator kept the move; the step itself was
+corrected in the entry before this one.
