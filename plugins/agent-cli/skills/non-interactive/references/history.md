@@ -132,3 +132,12 @@ reproducing citations and measurements alongside the two reasoning errors.
 
 Not measured: the cache refresh timer, quota draw of `Free`-marked models, `smart` mode,
 `devin update`, or credential rotation. One run each, not a ranking.
+
+### 2026-11-18 — update step 4 names the stamp and when an example's model id may move
+
+Step 4 said `SKILL.md` changes only when a shape or a trap does. Step 0 stamps it on every pass,
+though, and the 2026-10-30 pass moved its runnable examples to current ids, so the procedure
+described less than the practice it governs. Found by a cold review of the next refresh, which
+had moved an example under that precedent. The step now allows both, and holds the example to a
+run that succeeded with the documented result: a run stopped by auth or a quota limit has
+executed the command and shown nothing about the model.
