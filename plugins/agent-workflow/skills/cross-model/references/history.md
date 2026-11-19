@@ -55,3 +55,32 @@ and their stamps were extended rather than replaced: the key probe printed the s
 before, and the cache reader the same shape, `fetched_at` and then one line per model, whose
 values are expected to move. The key probe establishes that and no more: it prints `accepted`
 for any failure without the unknown-field message. The rest of the file was not re-verified.
+
+### 2026-11-18 — the agent name in `Assisted-by:` has one spelling per repository
+
+Verified by execution on git 2.43.0: `git log main -F --grep 'Assisted-by: <name>:grok-4.7-build'`,
+with `<name>` replaced by each spelling in turn, returns two commits for `Grok` and two others
+for `grok`; with `-i`, all four. So a case-sensitive search finds only part of one lane.
+
+**The first draft gave the wrong reason**, and a second review caught it. It said the split
+weakens the skipped-loop row of the failure register. It does not: that row reads the number of
+`Assisted-by:` lines on *one* commit, which no spelling changes. What the split breaks is the
+warrant `attribution.md` gives for the trailer at all — observability, from `git log` alone, of
+which units a model contributed to; the line records contribution, reviewer included, not role.
+The paragraph there now says that.
+
+The rule's shape is a half-clause in *Sealing policy* in `SKILL.md`, "in the one spelling the
+repository keeps for it", with the reasoning in `attribution.md`. The first draft kept it out of
+`SKILL.md` on cost. The second review answered that a sealing session reads the trailer shape
+there and nowhere else, which is the ground the section inventory already gives for keeping the
+strings in `SKILL.md`; the operator chose the half-clause. A third review found its first
+wording, "spelled as the repository already spells it", gave two valid answers in a repository
+that already holds both, as this one does; `attribution.md` now says to choose one. No new
+section, so no new inventory row. The `attribution.md` paragraph names the pair as an example and
+carries no count, since that file ships to installing projects, where "this repository" would be
+false.
+
+A commit-msg check was not written. No casing convention holds across agents (`opencode:` is
+lowercase as the tool spells itself), so a gate needs either a comparison against names already
+in history or a maintained list of canonical names; either is the operator's call. The four
+existing commits are left as they are, and the history is not rewritten.

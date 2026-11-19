@@ -41,6 +41,14 @@ This reverses what this file said before 2026-08-28, which was to write the mode
 gives it. That rule existed to stop invented variants; an id stops them better, because there is
 exactly one.
 
+The name before the colon is held to the same standard: **one spelling per agent, across the
+repository.** `git log --grep` is case-sensitive unless given `-i`, so `Grok:` beside `grok:`
+counts as two lanes, and a case-sensitive search for one finds only part of it. That search is
+what the observability above rests on, and what it shows is which units a model contributed to,
+reviewer included — not in which role. Where history already holds two spellings, choose one and
+use it for every new trailer; the old commits stay, and a search across them still needs `-i` or
+both spellings. Nothing refuses the second spelling, and nothing reports the split.
+
 ## What does not go in
 
 The context window, the harness that drove the model, the service that served it, the effort level,
