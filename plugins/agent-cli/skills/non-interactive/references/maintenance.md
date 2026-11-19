@@ -128,8 +128,11 @@ only that a row is present; whether it is true is what an `agent-skill:tiered` p
    on 2026-08-27 one was, in a form worse than the original, and the only reason it was caught
    is that the retired trap's probe had been left in place.
 3. Refresh `models.md` wholesale and re-date it. Do not patch individual rows.
-4. Only edit `../SKILL.md` if a shape or a trap actually changed. **A *new* trap passes the
-   reachability corollary first** — can a driver following this guide reach it, and can the entry
+4. Beyond step 0's stamp, only edit `../SKILL.md` if a shape or a trap actually changed — or to
+   move a runnable example's model id to one whose exact command succeeded in this pass with the
+   documented result, so the example never names a model the pass did not run; a command that
+   exited on auth or quota has run and shown nothing. **A *new* trap passes the reachability
+   corollary first** — can a driver following this guide reach it, and can the entry
    name an exit code, a stream, and a field the caller would have believed. If not, the flag is
    `--help`'s job, or the subject belongs in an opt-in file. That test is what took `--bare` back
    out the same day it went in, and it is stated in full under *What this skill is, and is not*;
