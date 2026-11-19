@@ -8,7 +8,7 @@ user-invocable: true
 
 The minimum you need to drive Claude Code or Codex from a subprocess without getting
 it wrong. Everything here was executed, not read off `--help`.
-**Last verified: 2026-11-10** (Claude Code 2.1.321, Codex 0.167.0).
+**Last verified: 2026-11-18** (Claude Code 2.1.327, Codex 0.170.0).
 
 When the CLI disagrees with this file, the CLI is right — see `references/verify.md`.
 
@@ -29,7 +29,7 @@ claude --resume "<sessionId>"    -p --output-format json --model sonnet < follow
 
 # Codex — --skip-git-repo-check is required outside a git repo. Resume is a subcommand,
 # not a flag, and -p inside exec means --profile.
-codex exec - --model gpt-6.1-sol --json --skip-git-repo-check --strict-config \
+codex exec - --model gpt-6.2-sol --json --skip-git-repo-check --strict-config \
   -c approval_policy=never -c model_reasoning_effort=medium -o out.txt < prompt.txt
 codex exec resume "<threadId>" - --json --skip-git-repo-check --strict-config < followup.txt
 ```
