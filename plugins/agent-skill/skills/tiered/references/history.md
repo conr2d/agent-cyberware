@@ -50,3 +50,17 @@ so the ratio flagged it and the reading cleared it. That is a second data point 
 question, and it argues against using the ratio alone as a threshold. Its *Going further*
 inventory row runs to a paragraph, which bears on the row-length question too.
 No open question in any skill had its stated condition met.
+
+### 2026-11-20 — test 3 splits practice skills from measurement skills
+
+The second pass found test 3 defined differently in `AGENTS.md`, and the operator chose to bring
+this file to the host's definition rather than the reverse. Applied as this file read before,
+test 3 condemned what a measurement skill is made of: `non-interactive` carries a version stamp
+and a runnable model id in its canonical command, and stripping them would make every caller run
+a probe before the first call, which is thicker, not thinner. The host's rendering already said a
+measurement skill satisfies the editorial rule the other way, naming the printing command and
+stamping the run, and that skill's update procedure is the mechanism that keeps the stamp honest.
+
+What changed is test 3's second sentence. The tier table, tests 1 and 2, and the pass are
+unchanged, so `AGENTS.md` needed no edit. Reasoned from the two files and the skill that relies
+on the split; nothing was executed beyond the gates.

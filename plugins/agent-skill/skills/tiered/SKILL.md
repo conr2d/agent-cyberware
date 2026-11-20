@@ -61,8 +61,9 @@ Apply in order. A passage failing one moves down a tier; it does not get argued 
    behind a precondition the reader does not have is paid on every invocation and met by
    nobody. That is an opt-in reference, or it is nothing.
 3. **Rot.** Does it have a shelf life — a version, a slug, a flag name, a measured number?
-   Then the document names the command that prints it, not the value. A dated measurement is a
-   record, not a rule.
+   Then a practice skill names the command that prints it, not the value. A measurement skill
+   is made of such values, and carries each one beside the command that prints it and a stamp
+   of when that command was last run. A dated measurement is a record, not a rule.
 
 What survives all three stays where it is.
 
