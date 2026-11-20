@@ -243,8 +243,8 @@ removes any worktree it made. Each was run as written and against a legacy block
 ### 2026-11-20 — research re-run: quota shapes hold, `MAX_THINKING_TOKENS=0` no longer reliable
 
 Update step 6, by hand, after step 0 (`claude update` found 2.1.329 current, `codex update`
-moved 0.170.0 to 0.171.0). Prompted by the second tier pass, which found the quarterly re-run
-due. The figures are recorded in `research.md` beside the sections they re-measure.
+moved 0.170.0 to 0.171.0). Prompted by the second tier pass, which found the quarterly re-run coming due at the end of
+November. The figures are recorded in `research.md` beside the sections they re-measure.
 
 Verified by execution:
 - Claude's `rate_limit_event` shape holds, and each window now carries a `status`.
@@ -305,9 +305,9 @@ A cold review of the agy refresh above, by a session of another vendor that does
 
 **The refresh ran twice.** The first agy session ran inside srt. There, the denied-tool probe
 came back with no `.denied_actions` and a tool failure explained in `.response`. That run's
-commit rewrote the success check, the trap and the probe to match. The review traced it to
+commit rewrote the success check, the trap and the probe to match. The review attributed it to
 agy's own sandbox failing to nest under srt, the same shape as Codex's in `sandboxed.md`, so
-nothing was denied and nothing reported a denial. The second session ran from a plain shell,
+that nothing was denied and nothing reported a denial. That cause is inferred and was not isolated. The second session ran from a plain shell,
 and the trap held as documented. That commit replaced the first, which is not in this history
 because it was never sealed. `agy.md` now states the environment beside its stamp and says to
 run its probes outside any outer sandbox.
@@ -326,3 +326,10 @@ on this point.
 
 Reasoned and edited by the reviewer; nothing re-executed. A probe of the `--log-file`
 question has to come from agy or from a person.
+
+An independent review by another model family found two more things. `models.md` still said
+`MAX_THINKING_TOKENS=0` turns thinking off, which the research re-run above had shown false;
+leaving it for a wholesale refresh was publishing a known-false claim, so the sentence is now
+corrected on its own. The sandbox-nesting cause was stated as measured; it is now marked
+inferred. The research entry's "due" is corrected too: the quarter comes round at the end of
+November.

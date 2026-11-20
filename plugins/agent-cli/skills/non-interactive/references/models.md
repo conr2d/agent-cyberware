@@ -24,8 +24,11 @@ read back from `modelUsage` in the `json` envelope of a real run**, which is the
 source that states the mapping — `--help` names three aliases as examples and no ids at all, so
 it cannot produce this table.
 
-Effort is a separate flag: `--effort low|medium|high|xhigh|max`. Effort does not gate
-thinking; `MAX_THINKING_TOKENS=0` does, and it is the larger lever on latency.
+Effort is a separate flag: `--effort low|medium|high|xhigh|max`. Neither it nor
+`MAX_THINKING_TOKENS=0` reliably turns thinking off: on 2026-11-20, with `haiku` resolving to
+`claude-haiku-5-5`, the variable beside `--effort low` read zero thinking on four runs of eight
+and was no faster. Read `thinking_tokens` back, as `verify.md`'s latency block does, rather than
+trusting either knob.
 `CLAUDE_EFFORT` in the environment does **not** select effort — Claude Code emits that
 variable, exposing the current turn's effort to hook commands and Bash-tool children, and
 never reads it back. A driver spawned from inside Claude Code inherits it and must still

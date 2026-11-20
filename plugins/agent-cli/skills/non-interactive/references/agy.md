@@ -32,9 +32,10 @@ other than a subscription being used by a foreign product.
 
 **Everything below was executed, not read off `--help`. Last verified: 2026-11-20** (agy 1.5.13,
 from a plain shell with no outer sandbox; first written on 1.1.16). **Run these probes outside
-any outer sandbox.** Under srt, agy's own sandbox does not nest, so a tool request fails rather
-than being denied, and `.denied_actions` goes missing for a reason that has nothing to do with
-agy. A first run of this refresh measured exactly that.
+any outer sandbox.** On 2026-11-20 a first run under srt saw the denied-tool probe return no
+`.denied_actions` and a tool failure explained in `.response`, while the plain-shell run showed
+the trap as documented. That agy's own sandbox failing to nest under srt is the cause is
+inferred, by analogy with Codex in `sandboxed.md`, and was not isolated.
 The probes are at the end of this file rather than in `verify.md`, so a standard pass neither
 runs them nor is made wrong by them going stale.
 
