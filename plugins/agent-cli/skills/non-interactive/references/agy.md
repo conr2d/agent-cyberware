@@ -30,8 +30,11 @@ third-party client; the second is not, and it is sufficient on its own. Auth clo
 escape: agy is **OAuth only**, so there is no API-key path that would make the account something
 other than a subscription being used by a foreign product.
 
-**Everything below was executed, not read off `--help`. Last verified: 2026-11-20** (agy 1.5.13;
-first written on 1.1.16).
+**Everything below was executed, not read off `--help`. Last verified: 2026-11-20** (agy 1.5.13,
+from a plain shell with no outer sandbox; first written on 1.1.16). **Run these probes outside
+any outer sandbox.** Under srt, agy's own sandbox does not nest, so a tool request fails rather
+than being denied, and `.denied_actions` goes missing for a reason that has nothing to do with
+agy. A first run of this refresh measured exactly that.
 The probes are at the end of this file rather than in `verify.md`, so a standard pass neither
 runs them nor is made wrong by them going stale.
 
@@ -125,17 +128,27 @@ claude-opus-4-6-thinking
 gpt-oss-120b-medium
 ```
 
-**That is the whole catalogue on 2026-11-20, agy 1.5.13**, verified by invocation across all six
-slugs (all answered with exit 0). The 3.7, 3.6 and 3.5 flash families and both `gemini-3.1-pro` rows
-remain gone. An unlisted or unsupported slug exits 1 with `status: "ERROR"` and `.error` printing
-the available models. Listings can drift, so **verify a pinned slug by invoking it, not by listing it.**
-The failure is loud, which is why it is here rather than above.
+**That is the whole catalogue on 2026-11-20, agy 1.5.13.** All six slugs were invoked, and
+all exited 0. The 3.7, 3.6 and 3.5 flash families and both `gemini-3.1-pro` rows remain gone.
+An unlisted or unsupported slug exits 1 with `status: "ERROR"` and `.error` printing the list
+agy will serve.
+
+Listings agreeing is not stability. On 2026-08-31, agy 1.1.22, the 3.5 family was present in
+three of twelve consecutive listings and absent from the other nine, and `--model` tracked the
+listing rather than the documentation (two of eight pinned runs succeeded). So a slug read back
+from `agy models` is not a contract — **verify a pinned slug by invoking it, not by listing
+it.** The failure is loud, which is why it is here rather than above. What it costs is a driver
+that worked yesterday and a retry that fixes it, or, as with the 3.7 rows by 2026-10-20, a
+driver whose every call now fails.
+
+Re-read 2026-10-30 on agy 1.4.10, run by the operator rather than an agent: the same six rows.
+Re-read 2026-11-10 on agy 1.5.3, also by the operator, in a single listing: the same six rows.
 
 With no `--model`, an unpinned run's `init` event omits `model` entirely, so the default is not
 readable back from the envelope (observed on 1.1.16, 1.1.18, 1.1.22, 1.4.2, and 1.5.13); a pinned run's
 `init` does name it. **Pin the model explicitly** — the default has rolled before, and agy
 updates itself without being asked, so the version you tested against is not necessarily the
-one that runs.
+one that runs. It self-updated mid-pass on both 2026-08-22 and 2026-08-27.
 
 **Where agy sits on the fast / default / strong ladder**, for a caller routing by complexity
 hint the way `models.md` describes for the other two: `gemini-3.8-flash-low` is fast,

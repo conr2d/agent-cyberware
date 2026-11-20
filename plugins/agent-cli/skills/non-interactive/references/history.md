@@ -298,3 +298,31 @@ unchanged, leaving the terms judgement date extended.
 
 Not run: none for agy.
 
+
+### 2026-11-20 — agy refresh review: probes need a plain shell, and the evidence goes back in
+
+A cold review of the agy refresh above, by a session of another vendor that does not drive agy.
+
+**The refresh ran twice.** The first agy session ran inside srt. There, the denied-tool probe
+came back with no `.denied_actions` and a tool failure explained in `.response`. That run's
+commit rewrote the success check, the trap and the probe to match. The review traced it to
+agy's own sandbox failing to nest under srt, the same shape as Codex's in `sandboxed.md`, so
+nothing was denied and nothing reported a denial. The second session ran from a plain shell,
+and the trap held as documented. That commit replaced the first, which is not in this history
+because it was never sealed. `agy.md` now states the environment beside its stamp and says to
+run its probes outside any outer sandbox.
+
+**Evidence restored.** The second commit still deleted the evidence behind two of `agy.md`'s
+rules: the twelve-listing drift measurement and the operator's two re-reads (behind *verify a
+pinned slug by invoking it*), and the two mid-pass self-update dates (behind *pin the model*).
+That was the refresh prompt's doing: it asked for *Models and effort* to be refreshed as a
+whole, meaning the values, not the record. The passages are back as they were, with the
+2026-11-20 result above them.
+
+**Quota downgraded from none to not yet ruled out.** The refresh saw an internal
+`retrieveUserQuotaSummary` call in agy's debug log. Whether `--log-file` records that call's
+response was not checked, so the entry above saying nothing was left unrun is not accurate
+on this point.
+
+Reasoned and edited by the reviewer; nothing re-executed. A probe of the `--log-file`
+question has to come from agy or from a person.

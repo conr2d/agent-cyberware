@@ -58,7 +58,8 @@ Findings behind the judgment calls:
 
 **Re-run 2026-11-20, per-spawn only**, Claude Code 2.1.329 (`haiku` resolving to
 `claude-haiku-5-5`) and codex-cli 0.171.0, with a prompt just under 1KB and the same
-three-sentence ask. Resident mode was not re-run, and agy was not run at all — `agy.md` says why.
+three-sentence ask. Resident mode was not re-run for these two. agy is not driven from this
+session, for the reason `agy.md` gives; its re-run, by an agy session, follows.
 
 - Claude, `--effort low`: wall 3.5–4.5s, `ttft_ms` about 1.0–1.8s, `duration_ms` about 1.8–2.4s,
   over three runs. With `MAX_THINKING_TOKENS=0` added: wall 4.3–4.7s over three, no faster.
@@ -71,10 +72,12 @@ three-sentence ask. Resident mode was not re-run, and agy was not run at all —
 - Boot alone: `claude --version` 0.013s, `codex --version` 0.029s. The rest of Claude's
   startup is still the per-call loading above, which `duration_ms` excludes.
 
-**Re-run 2026-11-20, agy 1.5.13**, on `gemini-3.8-flash-low` with the same ~1KB prompt and three-sentence ask.
+**Re-run 2026-11-20, agy 1.5.13**, by an agy session from a plain shell with no outer
+sandbox, on `gemini-3.8-flash-low` with the same ~1KB prompt and three-sentence ask.
 - Per-spawn: wall 7.6–9.7s over three runs (mean 8.5s; `duration_seconds` 3.3–5.2s).
-- Resident mode (`stream-json`): TTFT resident 2.4–4.6s, complete resident 3.0–4.7s over three turns.
-- Streaming shape: text still streams inside `step_update` events (`step_type == "agent_response"` carrying `.text_delta`), with the final payload on `result`.
+- Resident mode (`stream-json`): TTFT 2.4–4.6s, complete 3.0–4.7s over three turns.
+- Streaming shape: text still streams inside `step_update` events (`step_type ==
+  "agent_response"` carrying `.text_delta`), with the final payload on `result`.
 
 Two measurement pitfalls, if this is ever redone: do not give the child `stderr=PIPE` and
 read it only after `wait()` — `--verbose` fills the 64KB buffer and the child blocks forever;
@@ -168,7 +171,13 @@ go down, since the figures it once uniquely held are in the event stream.
   still embeds the `thread_id`.
 - **Unchanged.** `--ephemeral` left the rollout count unchanged, and a `--settings`-injected
   statusLine still did not fire in print mode.
-- **agy.** Re-examined 2026-11-20 on agy 1.5.13: none found, still. `--output-format json` carries only token counts under `.usage`, with no rate-limit or quota fields. `stream-json` events (`init`, `step_update`, `result`) carry no quota state. Local files under `~/.gemini/` and `~/.config/antigravity/` store tokens and settings but no quota cache or telemetry (internal `retrieveUserQuotaSummary` call in debug logs is ephemeral in memory).
+- **agy.** Re-examined 2026-11-20 on agy 1.5.13, by an agy session from a plain shell: no reader
+  found yet. `--output-format json` carries only token counts under `.usage`, and the
+  stream-json events (`init`, `step_update`, `result`) carry no quota state. Files under
+  `~/.gemini/` and `~/.config/antigravity/` hold tokens and settings, with no quota cache.
+  **Not yet ruled out: the debug log.** It shows an internal `retrieveUserQuotaSummary` call.
+  Whether `--log-file` records that call's response values was not checked, and if it does,
+  the log is a reader.
 
 **Not re-measured:**
 - **The pull endpoint.** The call was refused by this session's own permission layer before it
