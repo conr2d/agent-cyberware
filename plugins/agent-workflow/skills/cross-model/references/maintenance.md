@@ -96,8 +96,9 @@ states why different contexts are required and different models strengthen the s
    value in words. `./.githooks/check-citations.py --show` prints a skill's shape for reading,
    and the pre-commit hook refuses a `:N`, a `file.md:N` and a line anchor in any tracked
    Markdown, judged against a checkout of the index. It refuses an *N lines* claim only where the
-   paragraph names its subject — `SKILL.md`, *this skill*, or a skill's name — so a count in a
-   paragraph that names none passes, and keeping it out is this rule's job, not the gate's. There is no exemption for dated entries:
+   paragraph names its subject — `SKILL.md`, *this skill*, or a skill's name in backticks — or
+   in a table row after a sentence that does. A count anywhere else passes, and keeping it out
+   is this rule's job, not the gate's. There is no exemption for dated entries:
    one was tried, and a review found it covered exactly the region where the defect kept coming
    back.
 6. Append to `history.md`, newest last: what moved, what was verified by execution, and what is
