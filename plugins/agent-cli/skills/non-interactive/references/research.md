@@ -71,6 +71,11 @@ three-sentence ask. Resident mode was not re-run, and agy was not run at all —
 - Boot alone: `claude --version` 0.013s, `codex --version` 0.029s. The rest of Claude's
   startup is still the per-call loading above, which `duration_ms` excludes.
 
+**Re-run 2026-11-20, agy 1.5.13**, on `gemini-3.8-flash-low` with the same ~1KB prompt and three-sentence ask.
+- Per-spawn: wall 7.6–9.7s over three runs (mean 8.5s; `duration_seconds` 3.3–5.2s).
+- Resident mode (`stream-json`): TTFT resident 2.4–4.6s, complete resident 3.0–4.7s over three turns.
+- Streaming shape: text still streams inside `step_update` events (`step_type == "agent_response"` carrying `.text_delta`), with the final payload on `result`.
+
 Two measurement pitfalls, if this is ever redone: do not give the child `stderr=PIPE` and
 read it only after `wait()` — `--verbose` fills the 64KB buffer and the child blocks forever;
 and detect first-token per CLI rather than generically, for the reason just above.
@@ -163,11 +168,11 @@ go down, since the figures it once uniquely held are in the event stream.
   still embeds the `thread_id`.
 - **Unchanged.** `--ephemeral` left the rollout count unchanged, and a `--settings`-injected
   statusLine still did not fire in print mode.
+- **agy.** Re-examined 2026-11-20 on agy 1.5.13: none found, still. `--output-format json` carries only token counts under `.usage`, with no rate-limit or quota fields. `stream-json` events (`init`, `step_update`, `result`) carry no quota state. Local files under `~/.gemini/` and `~/.config/antigravity/` store tokens and settings but no quota cache or telemetry (internal `retrieveUserQuotaSummary` call in debug logs is ephemeral in memory).
 
 **Not re-measured:**
 - **The pull endpoint.** The call was refused by this session's own permission layer before it
   was sent, so that row stands at 2026-08-29.
 - **The `premium` bucket and the 100.0-is-not-a-gate finding.** Both need a run that hits the
   limit.
-- **agy**, on terms grounds.
 

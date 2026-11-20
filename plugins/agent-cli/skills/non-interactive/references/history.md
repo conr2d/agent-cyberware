@@ -270,3 +270,31 @@ rested on.
 
 The quota readers did not go stale a second time, so the open question on making them
 caller-facing keeps its revisit condition unmet.
+
+### 2026-11-20 — agy refresh: 1.5.13 verified, denied-tool trap holds, resident latency measured
+
+Agy coverage refreshed by an agy session driving agy, completing the research re-run. Update step 0
+confirmed `agy update` reports current at 1.5.13 before and after.
+
+Verified by execution:
+- Every probe in `agy.md` ran against 1.5.13. The stdin drop when `-p` is passed, the plain-text stdin
+  prompt without `-p`, the three loud argv mistakes (exit 2), the quiet bad stream event (exit 0, `init` only),
+  and the loud bad model slug (exit 1, `.error`) all hold as documented.
+- **The denied-tool trap holds.** Without `--dangerously-skip-permissions`, a tool-using print run exits 0
+  with `status: "SUCCESS"`, response `""`, no `.error` key, `.denied_actions` naming `action: "command"`
+  (`display_name: "Bash"` on 1.5.13, was `"RunCommand"` on 1.4.2), and the diagnostic on stderr. In
+  `stream-json`, status remained `SUCCESS` in both samples. Control with `--dangerously-skip-permissions`
+  (either position) executes cleanly and returns output. The three-part success check stands.
+- All six model slugs in `agy models` were invoked and answered with exit 0. Effort conflicts and invalid
+  effort values exit 1 with `.error`. Ladder stands with `gemini-3.8-flash-low` fast, `gemini-3.8-flash-high` default.
+- Per-spawn latency on `gemini-3.8-flash-low` averaged 8.5s wall (7.6–9.7s) with a ~1KB prompt; resident
+  `stream-json` measured TTFT 2.4–4.6s and complete 3.0–4.7s.
+- Streaming shape holds: text streams inside `step_update` (`step_type == "agent_response"`, `.text_delta`).
+- Quota check confirmed none found: neither JSON envelope, stream-json events, nor local config files
+  surface quota or rate limits.
+
+Read, not run: Antigravity Additional Terms of Service section 6. The prohibited conduct clauses are
+unchanged, leaving the terms judgement date extended.
+
+Not run: none for agy.
+
