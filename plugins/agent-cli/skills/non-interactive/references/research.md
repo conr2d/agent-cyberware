@@ -56,6 +56,21 @@ Findings behind the judgment calls:
   rather than as a distinct delta event. A detector written against Claude's shape reports
   "agy does not stream", which is wrong; that error was made and corrected here.
 
+**Re-run 2026-11-20, per-spawn only**, Claude Code 2.1.329 (`haiku` resolving to
+`claude-haiku-5-5`) and codex-cli 0.171.0, with a prompt just under 1KB and the same
+three-sentence ask. Resident mode was not re-run, and agy was not run at all — `agy.md` says why.
+
+- Claude, `--effort low`: wall 3.5–4.5s, `ttft_ms` about 1.0–1.8s, `duration_ms` about 1.8–2.4s,
+  over three runs. With `MAX_THINKING_TOKENS=0` added: wall 4.3–4.7s over three, no faster.
+- **`MAX_THINKING_TOKENS=0` is no longer a reliable switch.** Beside `--effort low` it read
+  `thinking_tokens: 0` on four runs of eight and spent from 39 to 213 on the others; without
+  `--effort` it spent thinking on all three runs. `--effort low` alone read `0` on one run of
+  three. The finding above was measured on an earlier `haiku` build and no longer holds: the
+  read-back that `verify.md`'s latency block asks for is now the only evidence the knob applied.
+- Codex, `gpt-6-luna` at effort low: wall 4.6–5.2s over three.
+- Boot alone: `claude --version` 0.013s, `codex --version` 0.029s. The rest of Claude's
+  startup is still the per-call loading above, which `duration_ms` excludes.
+
 Two measurement pitfalls, if this is ever redone: do not give the child `stderr=PIPE` and
 read it only after `wait()` — `--verbose` fills the 64KB buffer and the child blocks forever;
 and detect first-token per CLI rather than generically, for the reason just above.
@@ -77,6 +92,10 @@ Its built-in model defaults lag (`claude-opus-4-6`, `gpt-5.5`, `gemini-3.1-pro-p
 though its docs do tell users to pass `--model` explicitly. Decision: no upstream
 contribution, and no competing tool. The two projects occupy different positions — it is a
 wrapper, this is a guide — and they are complementary.
+
+**Re-checked 2026-11-20 from the GitHub API, not by running it:** still Apache-2.0 TypeScript,
+not archived, v0.6.1 still the latest release, last push 2026-09-12, about 360 commits. The
+defaults in `src/config.ts` are the ones named above. Nothing that bears on the decision moved.
 
 ### Subscription quota is reachable non-interactively, for two of three
 
@@ -134,4 +153,21 @@ closing the stdout pipe early, writes none. `--ephemeral` removes the file entir
 statusLine still does **not** fire in print mode, re-tested by injecting one via `--settings`
 and having it touch a file; it never ran. That fact now only matters as a dead end to not
 go down, since the figures it once uniquely held are in the event stream.
+
+**Re-measured 2026-11-20 on Claude Code 2.1.329 / Codex 0.171.0. Both shapes held.**
+- **Claude.** `rate_limit_event` carried the same seven keys under `.rate_limit_info`, and each
+  `unifiedWindows` entry now carries its own `status` beside `utilization` and `resetsAt`.
+  `--output-format json` still has no rate-limit key.
+- **Codex rollout.** It carried the same nested `primary`/`secondary` windows (300 and 10080
+  minutes) and the same `credits` fields, plus a new `limit_name` key. The rollout filename
+  still embeds the `thread_id`.
+- **Unchanged.** `--ephemeral` left the rollout count unchanged, and a `--settings`-injected
+  statusLine still did not fire in print mode.
+
+**Not re-measured:**
+- **The pull endpoint.** The call was refused by this session's own permission layer before it
+  was sent, so that row stands at 2026-08-29.
+- **The `premium` bucket and the 100.0-is-not-a-gate finding.** Both need a run that hits the
+  limit.
+- **agy**, on terms grounds.
 

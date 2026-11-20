@@ -239,3 +239,34 @@ and `denyWrite` against worktree registration.
 on `opencode debug agents`, and a worktree probe that now also asserts the run answered and
 removes any worktree it made. Each was run as written and against a legacy block as a control:
 `deny` ×4 against `allow` for `execute`, and ok against FAIL.
+
+### 2026-11-20 — research re-run: quota shapes hold, `MAX_THINKING_TOKENS=0` no longer reliable
+
+Update step 6, by hand, after step 0 (`claude update` found 2.1.329 current, `codex update`
+moved 0.170.0 to 0.171.0). Prompted by the second tier pass, which found the quarterly re-run
+due. The figures are recorded in `research.md` beside the sections they re-measure.
+
+Verified by execution:
+- Claude's `rate_limit_event` shape holds, and each window now carries a `status`.
+  `--output-format json` still has no rate-limit key.
+- Codex's rollout shape holds, with a new `limit_name` key. `--ephemeral` still leaves no
+  rollout, and statusLine still does not fire under `-p`.
+- Per-spawn latency on `haiku` and `gpt-6-luna`.
+- **`MAX_THINKING_TOKENS=0` beside `--effort low` read zero thinking on four runs of eight**, so
+  it is no longer the reliable lever it was measured as. `verify.md`'s block already asks the
+  reader to check `thinking_tokens` rather than trust the knob, so it stands. **`models.md`'s
+  sentence saying the variable turns thinking off does not**, and it is left for the next
+  update pass's wholesale refresh, per step 3, rather than patched here.
+
+Read, not run: headless-cli from the GitHub API. It is unchanged in every respect the decision
+rested on.
+
+**Not re-measured:**
+- The Codex pull endpoint. This session's permission layer refused the authenticated call
+  before it was sent.
+- The `premium` bucket and the 100.0 finding, which need a limit hit.
+- Resident-mode latency.
+- Everything agy, on terms grounds.
+
+The quota readers did not go stale a second time, so the open question on making them
+caller-facing keeps its revisit condition unmet.
