@@ -58,8 +58,8 @@ can only see that a row is present; whether it is true is what a pass reads for.
 3. Any addition to `../SKILL.md` adds its row to the inventory above in the same commit.
 4. **Never write a line number, here or anywhere.** Name the section. The pre-commit refuses a
    `:N`, a `file.md:N` and a line anchor in any tracked Markdown, but an *N lines* claim only
-   where the paragraph names its subject — a count in one that names none passes, and keeping it
-   out is this rule's job, not the gate's.
+   where its paragraph names a subject, or a table row follows a sentence that does. A count
+   anywhere else passes, and keeping it out is this rule's job, not the gate's.
 5. Append to `history.md`, newest last: what moved, what was established by running the pass,
    and what is reasoned. **Keep an entry to about forty lines.** One that will not fit is
    asking for its own reference file. Title it with what was decided or found, since the

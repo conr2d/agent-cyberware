@@ -21,7 +21,7 @@ open). Everything else is reasoned from reading.
 Moved or corrected, each its own commit:
 
 - `non-interactive` maintenance called the opt-in files "a fourth tier". The model gives them
-  tier 2's number, as the open question below closed on 2026-10-20. Reworded.
+  tier 2's number, as this skill's open question on exactly that closed on 2026-10-20. Reworded.
 - `cross-model` and this skill's maintenance both said the pre-commit refuses an *N lines*
   claim "in any tracked Markdown". The gate sees one only where the paragraph names a subject,
   as `AGENTS.md` says. Both now say so.
@@ -34,11 +34,12 @@ Found and **not** changed, because each is the operator's call:
   the value. `non-interactive` relies on the host's version (a version stamp and a model id in
   its canonical command). Either this file gains the distinction, which changes a test, or the
   host's rendering is stale.
-- `cross-model`'s *Sealing policy* example names `Codex:gpt-6.1-sol`, one generation behind the
-  sibling skill's example, and nothing in its update procedure moves it the way
-  `non-interactive` update step 4 does.
+- `cross-model`'s *Sealing policy* example names `Codex:gpt-6.1-sol`, an older id than the
+  sibling skill's example. It shows trailer syntax rather than a model to dispatch, so it is not
+  wrong; nothing in its update procedure moves it the way `non-interactive` update step 4 does,
+  which is worth deciding once.
 - `non-interactive` update step 6, the quarterly re-run of `research.md`, was last done in late
-  August, so it is due. That is a maintenance pass, not this one.
+  August, so it comes due at the end of November. That is a maintenance pass, not this one.
 - This skill has no trigger evals. Its description says it is invoked by name, so firing
   matters less than not firing; a near-miss case or two (writing a new skill, reviewing one
   skill's prose) would test that.
@@ -64,3 +65,9 @@ stamping the run, and that skill's update procedure is the mechanism that keeps 
 What changed is test 3's second sentence. The tier table, tests 1 and 2, and the pass are
 unchanged, so `AGENTS.md` needed no edit. Reasoned from the two files and the skill that relies
 on the split; nothing was executed beyond the gates.
+
+An independent review of these entries, by another model family, found the test 3 wording
+asking for a command and a stamp beside *each* value, which `non-interactive` does not do and
+the host's rendering does not ask; it now allows shared stamps and linked commands. It also
+found the "due" above overstated and the gate description missing the table-row case. The
+entries above were corrected before sealing.
