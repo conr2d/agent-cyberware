@@ -1,7 +1,8 @@
 # Models and effort tiers
 
 Cached recommendations. **The alias, cache and slug readings below are from 2026-11-18**; the
-Claude effort and fast-mode notes carry no newer measurement. All of it will rot — if a
+thinking-off note under effort was measured on 2026-11-20, and the other Claude effort and
+fast-mode notes carry no newer measurement. All of it will rot — if a
 suffix matters, re-read them from the CLI first (`verify.md`).
 
 ## Claude Code — `--model <alias|id>`
