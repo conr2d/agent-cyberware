@@ -196,6 +196,11 @@ cd "$W" && TMPDIR=/tmp srt --settings /path/to/s.json -- env HOME="$H" PATH="$HO
   opencode run --standalone --format json --model <provider>/<model> "<spec>" </dev/null
 ```
 
+**A model server on the host's own loopback is not reachable from here**, and widening
+`allowedDomains` is not what fixes it: the host address belongs in that list, but the run also
+needs a bridge inside the sandbox — trap 9 in *Traps under srt* is the wrapper, and *A local
+OpenAI-compatible server* is the config whose `baseURL` points at it.
+
 Results of the 2026-10-20 free-model run, asserted on files, exit 0:
 
 - `target.txt` in the project became `EDITED`, through both the write tool and shell.
@@ -301,6 +306,29 @@ Endpoint availability and ZDR status change. Read the current lists from
 `GET https://openrouter.ai/api/v1/models/<author>/<slug>/endpoints` and
 `GET https://openrouter.ai/api/v1/endpoints/zdr`.
 
+### A local OpenAI-compatible server
+
+An OpenAI-compatible server is selected per call with `--model <name>/<model-id>`, after a
+provider block in the working config. This shape ran against a server on the host, in the lane,
+through the bridge in trap 9; it was read from the operator's config, where the server's own
+`connect opencode` command had written it on 2026-11-23 under opencode 2.3.2, and the only
+change was `baseURL`:
+
+```json
+{"providers":{"<name>":{"package":"@opencode/ai/providers/openai-compatible","name":"<label>",
+  "settings":{"baseURL":"http://127.0.0.1:18080/v1","apiKey":"<key, if the server wants one>"},
+  "models":{"<model-id>":{"name":"<label>","type":"chat",
+    "capabilities":{"tools":true,"input":["text"],"output":["text"]},
+    "limit":{"context":262144,"input":258048,"output":32768}}}}}}
+```
+
+**`providers` is plural, and it is not the key the OpenRouter block above uses.** Both were in
+the same working config at once on 2.3.2, and the run here used only the `providers` one; which
+spelling is canonical was not established.
+
+**`limit.input` is required, or opencode never compacts** — that is the comment beside the
+config above. **Read from that comment, not measured.**
+
 ### Traps under srt
 
 1. **A missing settings field is loud.** Omitting, for example, `network.deniedDomains`
@@ -357,6 +385,42 @@ Endpoint availability and ZDR status change. Read the current lists from
    returned 200. Inside, that directory showed only a `claude-empty-…` placeholder. The lane
    commands set `TMPDIR=/tmp` on the `srt` process for this reason; the wrapped command's own
    `TMPDIR` is trap 4's.
+9. **A model server on the host's own loopback is unreachable from inside, and `NO_PROXY`
+   does not change it.** Measured 2026-11-23, opencode 2.3.2, srt 0.0.81, against a server on
+   the host at `127.0.0.1:8080` and listed in `allowedDomains`: with `baseURL` at
+   `http://127.0.0.1:8080/v1`, and again at `http://localhost:8080/v1`, every attempt emitted
+   `retry` events with `.error.type` `provider.transport` and
+   `ECONNREFUSED: Unable to connect. Is the computer able to access the url?`, and the run
+   exited 1 with no turn. Same result with `NO_PROXY`/`no_proxy` empty and with srt's default,
+   which lists loopback. In the same sandbox
+   `NO_PROXY= no_proxy= curl http://127.0.0.1:8080/v1/models` returned 200 through srt's
+   proxy, so the allowlist is not what is in the way. **Reasoned, not measured:** the sandbox
+   has its own network namespace, so its loopback is not the host's, and opencode does not
+   send a loopback URL to the proxy where curl does when told to.
+
+   **The fix is a bridge inside the sandbox**: a `socat` listener on the sandbox's own loopback
+   that forwards through srt's proxy to the host address, with `baseURL` pointed at the bridge
+   instead. Save it outside `<work>`, `allowRead` it, and put it before the command as
+   `srt --settings s.json -- <wrapper> opencode run …`:
+
+   ```sh
+   #!/bin/sh
+   # runs inside srt: 127.0.0.1:18080 (sandbox) -> 127.0.0.1:8080 (host) via srt's proxy
+   hp=${HTTP_PROXY#*://}; auth=${hp%@*}; hostport=${hp#*@}
+   socat TCP-LISTEN:18080,bind=127.0.0.1,fork,reuseaddr \
+     "PROXY:${hostport%:*}:127.0.0.1:8080,proxyport=${hostport##*:},proxyauth=$auth" &
+   sleep 0.5
+   exec env HOME="<home>" PATH="$HOME/.opencode/bin:/usr/bin:/bin" NO_PROXY='*' no_proxy='*' "$@"
+   ```
+
+   The proxy credential is srt's per-run value: the script reads `HTTP_PROXY` from the
+   environment at run time and never stores it. The host address stays in `allowedDomains`
+   (as `127.0.0.1:8080`); the bridge port is inside the sandbox and needs no rule. Measured
+   with this exact form: inside srt, `curl http://127.0.0.1:18080/v1/models` returned 200 and
+   an opencode smoke run exited 0 — the shell tool printed `t.txt`, `ls ~/.ssh` failed with
+   `No such file or directory` because that home is the throwaway one, and a shell write set
+   `t.txt` to `EDITED`. The task runs under *Model notes* used an earlier wrapper that parsed
+   `HTTP_PROXY` with `sed` to the same two values.
 
 What the lane does not do: Unix sockets are not filtered with `allowAllUnixSockets` on, hence
 the deny-read on `/run/user/<uid>`. The provider's domain is reachable, so the project's contents
@@ -414,6 +478,31 @@ key is present. A `#variant` the model does not list exits 1 with `Variant unava
 <model>: <variant>`, so on 2.0 an effort that does not exist is loud; `#high` on this model
 answered at exit 0. Whether reasoning tokens are counted could not be read, because the runs
 that used `#high` were among those with no `step_finish`.
+
+**2026-11-23 — `inkling-2-mini-sq-20`**, Inkling-2-Mini at the `sq-20` quantization, context
+262,144, served by an OpenAI-compatible server on the host through the bridge in trap 9 and
+selected with `--model <name>/inkling-2-mini-sq-20`; the provider block declared reasoning
+unsupported, so there was no `#variant`. One run each at server-default sampling, the same
+three author tasks and the same design task as `devin.md`'s *How it did as an author*, the
+same prompt:
+
+- Task 1, the parser module: every hidden test (6/6).
+- Task 2, the multi-file fix and CLI contract: 15/16, an amount left as `5 USD` where the
+  output spec required `5.00 USD`.
+- Task 3, the spec with three planted contradictions: 5/6. It found all three, named each with
+  the choice it made, left the protected test unmodified and reported the resulting failure in
+  its final line (`TESTS: 10/11`) — but did not handle a request that can never be satisfied,
+  returning a finite wait for `wait_time(n)` with n above capacity.
+- The design task: 7.5 of 8 on the rubric written before the runs. Every planted defect was
+  identified with a workable alternative, and the decoy was listed in the problems section
+  (−0.5). Two errors the rubric does not score: its fallback for SQLite on NFS was WAL mode,
+  which SQLite's documentation says does not work over a network filesystem (**read from
+  SQLite's documentation**), and its reaper reclaims a job by `started_at` age against the
+  lease timeout although the design defines a heartbeat, so a healthy job outliving the lease
+  would be re-run. Its retry limit was consistent across the data model, the lifecycle and the
+  problems list.
+
+One run each, not a ranking; a different quantization of the same model is a different subject.
 
 ## Verifying this file
 
@@ -507,5 +596,45 @@ PYSETTINGS
 test "$(cat "$W/target.txt")" = EDITED
 test -z "$(ls -A "$O")"
 # expected: both assertions pass — target.txt is EDITED, and $O stays empty.
+
+# a local OpenAI-compatible server on the host: the bridge. Needs one running at
+# 127.0.0.1:8080, and $H/.config/opencode/opencode.json carrying the provider block from
+# *A local OpenAI-compatible server* with baseURL http://127.0.0.1:18080/v1.
+B=$(mktemp -p /var/tmp); chmod +x "$B"
+sed "s|<home>|$H|" > "$B" <<'WRAPPER'
+#!/bin/sh
+hp=${HTTP_PROXY#*://}; auth=${hp%@*}; hostport=${hp#*@}
+socat TCP-LISTEN:18080,bind=127.0.0.1,fork,reuseaddr \
+  "PROXY:${hostport%:*}:127.0.0.1:8080,proxyport=${hostport##*:},proxyauth=$auth" &
+sleep 0.5
+exec env HOME="<home>" PATH="$HOME/.opencode/bin:/usr/bin:/bin" NO_PROXY='*' no_proxy='*' "$@"
+WRAPPER
+python3 - "$W" "$H" "${SRT_DIR:-}" "$(id -u)" "$C" "$B" <<'PYBRIDGE'
+import json, sys
+from pathlib import Path
+repo, home, srt_dir, uid, cfg, wrapper = sys.argv[1:]
+settings = {
+    "network": {"allowedDomains": ["127.0.0.1:8080", "localhost:8080"],
+                "deniedDomains": [], "allowAllUnixSockets": True},
+    "filesystem": {"denyRead": ["~", f"/run/user/{uid}"],
+                   "allowRead": ["~/.opencode", wrapper] + ([srt_dir] if srt_dir else []),
+                   "allowWrite": [repo, home], "denyWrite": [f"{repo}/.git"]},
+}
+Path(cfg, "bridge.json").write_text(json.dumps(settings))
+PYBRIDGE
+(cd "$W" && TMPDIR=/tmp srt --settings "$C/bridge.json" -- "$B" \
+  curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:18080/v1/models)
+# expected: 200 — the bridge reaches the host through srt's proxy.
+(cd "$W" && TMPDIR=/tmp srt --settings "$C/bridge.json" -- "$B" \
+  opencode run --standalone --format json --model "<name>/<model-id>" "Reply with exactly: OK" </dev/null)
+# expected: exit 0, a text event with OK.
+
+# the trap: the same one-shot with baseURL back at http://127.0.0.1:8080/v1 and no wrapper
+(cd "$W" && TMPDIR=/tmp srt --settings "$C/bridge.json" -- \
+  env HOME="$H" PATH="$HOME/.opencode/bin:/usr/bin:/bin" \
+  opencode run --standalone --format json --model "<name>/<model-id>" "Reply with exactly: OK" </dev/null)
+# expected: exit 1, retry events with provider.transport and ECONNREFUSED, no turn.
+# If it answers, the host's loopback is reachable from inside and trap 9 is retired.
+rm -f "${B:?}"
 rm -rf "${W:?}" "${O:?}" "${H:?}" "${C:?}"
 ```

@@ -178,3 +178,29 @@ it now says only Claude's does. And moving `SKILL.md`'s runnable
 example had followed the 2026-10-30 precedent while step 4 of the update procedure said
 `SKILL.md` changes only for a shape or a trap. The operator kept the move; the step itself was
 corrected in the entry before this one.
+
+### 2026-11-23 — a host-loopback model needs a bridge inside srt
+
+`opencode.md` gained *A local OpenAI-compatible server* and trap 9. Executed on 2026-11-23 with
+opencode 2.3.2, srt 0.0.81 and socat 1.8.1.3, against an OpenAI-compatible server on the host
+at `127.0.0.1:8080`: every run with `baseURL` at `http://127.0.0.1:8080/v1`, and again at
+`http://localhost:8080/v1`, retried with `.error.type` `provider.transport` and
+`ECONNREFUSED`, and exited 1 with no turn — with `NO_PROXY` empty and with srt's default, which
+lists loopback. In the same sandbox `curl` to that URL returned 200 through srt's proxy. The
+documented fix is a `socat` bridge inside the sandbox, forwarding through `HTTP_PROXY` to the
+host address; that exact wrapper ran, `curl` to the bridge returned 200, and an opencode smoke
+run exited 0 with the shell tool writing and reading a file while `~/.ssh` stayed hidden. The
+four task runs used an earlier wrapper that parsed `HTTP_PROXY` with `sed` to the same two
+values, so both forms ran.
+
+Read, not measured: the provider block's shape and the comment declaring `limit.input`
+required or opencode never compacts; and SQLite's documentation, that WAL mode does not work
+over a network filesystem. Reasoned only: why opencode does not send a loopback URL to the
+proxy where curl does.
+
+`inkling-2-mini-sq-20` (Inkling-2-Mini at `sq-20`, context 262,144) ran the same three author
+tasks and the same design task as `devin.md`'s *How it did as an author*, one run each: 6/6,
+15/16 and 5/6, and 7.5 of 8 on the rubric written before the runs. Its two errors the rubric
+does not score were WAL mode as a SQLite-on-NFS fallback and a reaper keying on `started_at`
+rather than the heartbeat the design defines. Wall times and every hardware-dependent figure
+were left out deliberately: they would not reproduce. One run each, not a ranking.
