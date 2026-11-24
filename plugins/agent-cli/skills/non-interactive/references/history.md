@@ -204,3 +204,38 @@ tasks and the same design task as `devin.md`'s *How it did as an author*, one ru
 does not score were WAL mode as a SQLite-on-NFS fallback and a reaper keying on `started_at`
 rather than the heartbeat the design defines. Wall times and every hardware-dependent figure
 were left out deliberately: they would not reproduce. One run each, not a ranking.
+
+### 2026-11-24 — opencode's read-only lane denies everything, then allows reads
+
+The finding arrived as another session's handoff. Every executed claim below was re-run here on
+opencode 2.3.2 before it was kept, in a throwaway home with `--standalone` rather than
+the real `~/.config/opencode` that *Verifying this file* assumes; none is the handoff's alone.
+
+Executed: the legacy `permission` object still loads and converts (`bash`→`shell`,
+`task`→`subagent`, each deny becoming `{action, resource: "*", effect}`); `opencode debug agents`
+prints the effective ruleset, last-match over an allow-all base; and the legacy deny block no
+longer holds the lane read-only — the model got `execute` (Code Mode), created a git worktree
+through it and renamed its session, while file writes from inside failed. The native
+`permissions` array that denies `*` and allows the read tools created no worktree and no file,
+and read a file correctly; with `--auto` the shell probe created nothing. Tool lists are the
+model's own report, corroborated by those side effects.
+
+The cold review found the gap that mattered most: **a project `opencode.json` or
+`.opencode/opencode.json` re-allows what the home denies**, because its rules come later in the
+same list. Measured on the ruleset, then fixed: `OPENCODE_DISABLE_PROJECT_CONFIG=1` restored the
+denies, and the lane now sets it. Not checked on a `run`, nor what else the variable disables.
+The review also measured that a legacy and a native key set together concatenate rather than
+override, and the text says so.
+
+Read, not measured: the schema (`permissions` is the ruleset; `provider`, `permission` and
+`tools` are deprecated), the bundled source's last-match rule, Code Mode's permission check on
+`execute` and each inner tool, and the `write`/`patch`/`apply_patch`→`edit` mapping.
+
+Not measured: the native `providers.…settings.provider` OpenRouter form on a request — the
+routing table keeps its legacy-form dates — whether `skill` is refused, a `.env` read or deny,
+and `denyWrite` against worktree registration.
+
+*Verifying this file* gained two probes beside the unchanged permission floor: a ruleset check
+on `opencode debug agents`, and a worktree probe that now also asserts the run answered and
+removes any worktree it made. Each was run as written and against a legacy block as a control:
+`deny` ×4 against `allow` for `execute`, and ok against FAIL.

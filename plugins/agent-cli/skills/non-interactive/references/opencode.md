@@ -12,7 +12,9 @@ does not share a limit with anything else.
 
 **Verified 2026-10-19** — opencode 2.0.32, model `opencode/deepseek-v4.1-flash-free`,
 bubblewrap 0.12.0; **probes re-run 2026-11-10 on 2.2.6**, with two results changed: the
-second-home `run` and `step_finish`, both noted where they are described. Everything below was executed unless it says otherwise. **2.0 is a different
+second-home `run` and `step_finish`, both noted where they are described. **On 2026-11-24, on
+2.3.2, the permission block, the provider-block shapes and the permission probes in *Verifying
+this file* were re-run**; nothing else in this file was re-verified there. Everything below was executed unless it says otherwise. **2.0 is a different
 program from the 1.18 this file was first written against**: `run` now goes through a resident
 background server, three flags are gone, three traps are new or newly found, and the pre-turn
 failures that used to name nothing now name what was wrong. Other providers and models are
@@ -107,29 +109,100 @@ service. **Spawn per call** stands only in the sense that each `run` is still on
 **`opencode run` executes shell and edit tools with no flag at all**, and `--auto` is not the
 gate its help text suggests — it auto-approves what is not explicitly denied, but its *absence*
 denies nothing. Verified by filesystem on 1.18: a run told to `echo … > proof.txt` created the
-file, twice out of two. The session default denies only `question`, `plan_enter` and
-`plan_exit`.
+file, twice out of two. On 1.18 the session default denied only `question`, `plan_enter` and
+`plan_exit`; `opencode debug agents` prints what is effective now (below).
 
 For a second-opinion lane, deny everything that mutates or reaches out. This belongs in
-`~/.config/opencode/opencode.jsonc`:
+`~/.config/opencode/opencode.jsonc` or `opencode.json`, and the run that reads someone else's
+tree sets `OPENCODE_DISABLE_PROJECT_CONFIG=1` — see *A project config overrides it*, below:
 
-```jsonc
+```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "permission": {
-    "read": "allow", "list": "allow", "glob": "allow", "grep": "allow",
-    "lsp": "allow", "todowrite": "allow",
-    "edit": "deny", "bash": "deny",
-    "external_directory": "deny", "task": "deny", "skill": "deny",
-    "webfetch": "deny", "websearch": "deny",
-    "question": "deny", "doom_loop": "deny"
-  }
+  "permissions": [
+    {"action": "*",         "resource": "*", "effect": "deny"},
+    {"action": "read",      "resource": "*", "effect": "allow"},
+    {"action": "list",      "resource": "*", "effect": "allow"},
+    {"action": "glob",      "resource": "*", "effect": "allow"},
+    {"action": "grep",      "resource": "*", "effect": "allow"},
+    {"action": "lsp",       "resource": "*", "effect": "allow"},
+    {"action": "todowrite", "resource": "*", "effect": "allow"}
+  ]
 }
 ```
 
-Keys and values come from the published schema (`https://opencode.ai/config.json` →
-`$defs.PermissionConfig`), each `"ask" | "allow" | "deny"` or a pattern object. Re-measured on
-2.0.32 through the background service:
+**The keys are native as of 2.3.2.** Read from the published schema
+(`https://opencode.ai/config.json`, 2026-11-24; which release introduced them was not checked):
+`properties.permissions` — *Ordered tool permission rules applied to agent tool use* — is
+`$defs/Permission.Ruleset`, an array of `{action, resource, effect}` objects, all three required, no other keys, `effect` one
+of `allow | deny | ask`. The top-level `provider`, `permission` and `tools` keys are marked
+deprecated there; the native companions are `providers` and `permissions`.
+
+**A ruleset is resolved last-match, over an allow-all base.** Executed 2026-11-24 on 2.3.2:
+`opencode debug agents` prints the `build` agent's effective ruleset — the base
+`{"*","*","allow"}`, then opencode's own defaults (`read` of `*.env` and `*.env.*` is `ask`,
+`*.env.example` allow, `question` allow), then the config's rules, then `browser * deny`. **Run
+that command after any upgrade, from inside the project the lane will read**; it shows the floor
+the lane actually gets. Read from the
+bundled source: a request takes the *last* rule whose `action` and `resource` match, wildcards
+included, defaulting to `ask`; a tool leaves the model's tool list when the last rule matching
+its action is a deny on `*`. Consequence, executed: any action the config does not name stays
+allowed by the base rule.
+
+**The legacy `permission` object still loads and is converted**, so an older config is not
+silently ignored — but it denies only what it names. Executed 2026-11-24, `opencode debug
+agents` showed `bash` become `shell`, `task` become `subagent`, every other name kept, and each
+`"x": "deny"` become `{"action":"x","resource":"*","effect":"deny"}`. Read from the bundled
+source, not measured: `write`, `patch` and `apply_patch` map to `edit`. **Both keys set at once
+do not override each other; they concatenate.** Measured in review: `"permission":
+{"edit":"allow"}` beside `"permissions": [{"action":"edit","resource":"*","effect":"deny"}]`
+gave both rules, legacy first, so the native one wins only by last-match on the same action and
+resource, and a legacy rule the array does not shadow still applies. No `retained native value
+over legacy value` diagnostic, which the source contains, appeared on `debug agents`' stderr.
+
+**2026-11-24: the legacy deny block no longer makes the lane read-only.** With it in place on
+2.3.2, the model's tool list — as the model reported it when asked; the side effects below are
+what corroborates it — held `execute` — Code Mode, which calls further tools as
+`tools.<namespace>.<name>` — plus `experimental_image_generate`, `glob`, `grep`, `read` and
+`skill`. Told to use them, the run created a git worktree through
+`tools.opencode.worktree_create`, under the run's home and registered in the project's `.git`,
+and renamed its session; file writes from inside `execute` failed four ways (`node:fs`,
+`require('fs')`, `Deno`, `Bun` all unavailable) and no file appeared. Read from the bundled
+source: an `execute` call asserts permission on `execute` itself and then on each inner tool's
+action — the tool's declared permission (`worktree_remove` declares `edit`) or else its id;
+`worktree_create`, `session_move` and `session_rename` declare none.
+
+**Results with the block above, executed 2026-11-24:** the tool list the model reported was
+`glob`, `grep`, `read`, `skill` — no `execute`, no shell, no edit or write, no image tool. The same six-step prompt
+created no worktree and no file and read a file correctly; exit 0, the model saying the tools
+were not available. Under `--auto` the shell probe still created no `proof.txt`, and a `glob`
+outside the project failed with `Permission denied: external_directory`. Why it is the better
+form (reasoned): a tool added in a later version is denied by default instead of allowed by the
+base rule. The `list`, `lsp` and `todowrite` allows are carried over from the legacy block; no
+tool by those names appeared in either reported list, so whether they still matter on 2.3.2 is
+unknown.
+
+**A project config overrides it.** opencode also loads `opencode.json` or
+`.opencode/opencode.json` from the project, and its rules land after the home's in the same
+last-match list. Measured 2026-11-24 with `debug agents --standalone` and the block above in the
+home: a project file allowing `shell` and `execute` made both `allow`, in either location; with
+`OPENCODE_DISABLE_PROJECT_CONFIG=1` (or `true`) both were `deny` again. A second-opinion lane
+reads a tree someone else controls, so **set it on every run of that lane**. Measured on the
+ruleset only, not on a `run`; what else the variable switches off — project agents, commands,
+plugins, the auto-loaded `AGENTS.md` — was not checked.
+
+Two caveats. **`skill` stayed in the tool list under both configs**; in the deny-all run a call
+to it returned `Unable to load skill test`, but no skill existed to load, so whether `skill` is
+refused was not established. In the effective ruleset the last rule naming `skill` is opencode's
+own `skill browser deny`, whose resource is not `*`; that this is why it stays listed is
+**reasoned** from the source's removal rule. And **`.env` files are readable under this block**
+(**reasoned from the effective ruleset**; no `.env` read was attempted), as they were under the
+legacy one: `read * allow` comes after opencode's `*.env` `ask` defaults. A lane that must not read them adds
+`{"action":"read","resource":"*.env","effect":"deny"}` (and `*.env.*`) after the read allow —
+**reasoned from last-match, not measured**.
+
+The three bullets below were first measured on 2.0.32 through the background service; the
+block's outcome was re-measured on 2.3.2 as above:
 
 - **`deny` holds, and holds against `--auto`.** `proof.txt` was not created either way.
 - **Read-only tools keep working.** A run still reads a file and reports its contents.
@@ -139,21 +212,23 @@ Keys and values come from the published schema (`https://opencode.ai/config.json
   agy's denial in `agy.md`.
 
 **The block above is written for one lane, and a second lane needs the opposite.** An author
-agent that writes code needs exactly the `edit` and `bash` this denies. Do not loosen the shared
+agent that writes code needs exactly the `edit` and `shell` actions this denies. Do not loosen the shared
 file to get them: **the config is resolved from `$HOME`**, so a run given its own home gets its
 own permission block. That run also needs **`--standalone`**; on 2.0 it failed on the service
 port as above. Measured 2026-10-19: a home whose config set `edit` and `bash` to `allow`, run
 with `--standalone`, wrote `shell.txt` through the shell tool, exit 0; the same without
-`--standalone` exited 1 on the port. On 1.18 the lane split was also measured on `edit`; on 2.0
-only the shell half was.
+`--standalone` exited 1 on the port. Those are the legacy names — the native actions are `edit`
+and `shell` (`bash` converts to `shell`). On 1.18 the lane split was also measured on `edit`;
+on 2.0 only the shell half was.
 
 Which means the safety is not in the config. **Give an author lane a `$HOME` of its own and
 confine it; the config then states the lane's role rather than doing the work.**
 
 **Found in the binary and never invoked — do not write these up as though they were tested.**
-`OPENCODE_CONFIG`, `OPENCODE_CONFIG_DIR` and `OPENCODE_DISABLE_PROJECT_CONFIG` appeared in a
-1.18 strings dump (with `OPENCODE_CONFIG_CONTENT` and `OPENCODE_AUTH_CONTENT`). Their presence
-is evidence the symbols existed and nothing more:
+`OPENCODE_CONFIG` and `OPENCODE_CONFIG_DIR` appeared in a 1.18 strings dump (with
+`OPENCODE_CONFIG_CONTENT` and `OPENCODE_AUTH_CONTENT`). Their presence is evidence the symbols
+existed and nothing more. `OPENCODE_DISABLE_PROJECT_CONFIG`, from the same dump, has since been
+measured — above.
 
 ```sh
 strings -a "$(readlink -f "$(command -v opencode)")" | grep -oE 'OPENCODE_[A-Z_]+' | sort -u
@@ -226,7 +301,9 @@ previous wrapper, not re-measured under srt.
 copied into it.** A throwaway home has **no config at all**, so opencode's own defaults apply —
 and its defaults already run shell and edit tools with no flag, which is the hazard the section
 above opens with. Under the carve-out that default is exactly right. Do not allow-read the
-shared permission config into it.
+shared permission config into it. **Code Mode's `worktree_create` writes a git worktree under
+the run's home and registers it in the project's `.git`**; in this lane `denyWrite` on
+`<repo>/.git` is expected to refuse the registration — **not measured**.
 
 | | on a bare machine | inside the carve-out |
 |---|---|---|
@@ -262,17 +339,17 @@ as `OPENROUTER_API_KEY`, `opencode auth list` inside showed
 `OpenRouter  OPENROUTER_API_KEY  environment`, and the run exited 0 with `EDITED`.
 `openrouter.ai` alone was enough; `models.dev` was tried and was not needed.
 
-opencode passes a model's `options.provider` to OpenRouter as its routing object. This config
-goes in the throwaway home's `~/.config/opencode/opencode.json`; the provider slug is an example
-placeholder:
+opencode passes a model's routing object to OpenRouter. On 2.3.2 the native spelling is
+`providers` → `models.<id>.settings.provider`. This config goes in the throwaway home's
+`~/.config/opencode/opencode.json`; the provider slug is an example placeholder:
 
 ```json
 {
-  "provider": {
+  "providers": {
     "openrouter": {
       "models": {
         "deepseek/deepseek-v4.1-flash-1017": {
-          "options": {
+          "settings": {
             "provider": {
               "order": ["<provider-slug>"],
               "allow_fallbacks": false,
@@ -285,6 +362,11 @@ placeholder:
   }
 }
 ```
+
+**The routing results below were measured with the legacy form** — `provider` →
+`models.<id>.options.provider` — which 2.3.2 converts to exactly this shape, `opencode debug
+config` printed it so (executed 2026-11-24). **Not measured:** that the native
+`settings.provider` form reaches OpenRouter as the routing object; no request was made with it.
 
 | pinned to (example) | `zdr` | exit | `target.txt` |
 |---|---|---|---|
@@ -322,9 +404,11 @@ change was `baseURL`:
     "limit":{"context":262144,"input":258048,"output":32768}}}}}}
 ```
 
-**`providers` is plural, and it is not the key the OpenRouter block above uses.** Both were in
-the same working config at once on 2.3.2, and the run here used only the `providers` one; which
-spelling is canonical was not established.
+**`providers` is plural and it is the native key**, which settles the spelling: the OpenRouter
+block above writes it too, and the singular `provider` is deprecated in the schema and still
+converted on load — `opencode debug config` on 2.3.2 printed `providers.…models.<id>.settings`
+from the legacy form. Both spellings were in one working config at once before that was known,
+and the run here used only the `providers` one.
 
 **`limit.input` is required, or opencode never compacts** — that is the comment beside the
 config above. **Read from that comment, not measured.**
@@ -507,7 +591,8 @@ One run each, not a ranking; a different quantization of the same model is a dif
 ## Verifying this file
 
 These are **not** part of the standard pass in `verify.md`; run them when this file is the thing
-being checked. Each needs a scratch directory and the permission block above in place.
+being checked. Each needs a scratch directory and the block in *Configure permissions* in place
+— the native `permissions` array, not the deprecated `permission` object.
 
 ```sh
 export PATH="$HOME/.opencode/bin:$PATH"
@@ -537,6 +622,17 @@ opencode run --format json --model "$M#bogus" "Reply OK" </dev/null
 opencode run --format json --model $M -s ses_doesnotexist123 "Reply OK" </dev/null
 # expected: exit 1 each, an error event on stdout naming what was wrong
 
+# the effective ruleset: the last matching rule for each mutating action must be a deny
+opencode debug agents | python3 -c "import json,sys; A={a['id']:a['permissions'] for a in json.load(sys.stdin)}; R=A['build']; [print(x, next((r['effect'] for r in reversed(R) if r['action'] in (x,'*') and r['resource']=='*'), 'ask')) for x in ['execute','shell','edit','opencode.worktree_create']]"
+# expected: four lines, each ending deny (executed 2026-11-24; the legacy block gave allow for
+# execute and opencode.worktree_create). An allow means the block is not loaded, or an upgrade
+# appended a later rule. Under a second $HOME add --standalone; without it this printed nothing
+# (executed). Run it from the project the lane will read, with and without
+# OPENCODE_DISABLE_PROJECT_CONFIG=1: a difference is a project config re-allowing something.
+# It only sees rules whose action is the name or `*` and whose resource is `*`; a later rule with
+# a wildcard action or a narrower resource is missed. The inner id opencode.worktree_create is
+# read from the bundled source, and no rule names it, so that line shows the `*` rule's effect.
+
 # permission floor: the shell tool must NOT create the file, with or without --auto.
 cd "$(mktemp -d)"
 rm -f proof.txt
@@ -548,6 +644,24 @@ test -f proof.txt && echo "FAIL: --auto overrides deny" || echo "ok: deny beats 
 echo "hello from probe" > sample.txt
 opencode run --format json --model $M "Read sample.txt and reply with its exact contents." </dev/null
 # expected: the reply contains "hello from probe"
+
+# Code Mode's worktree tool is gone under this block: no worktree may be registered.
+# The commit matters: worktree_create needs a HEAD, and without one the probe could pass vacuously.
+W=$(mktemp -d); (cd "$W" && git init -q && echo a > a.txt && git add a.txt \
+  && git -c user.name=probe -c user.email=probe@localhost commit -qm probe)
+(cd "$W" && opencode run --format json --model $M \
+  "Use the execute tool to call tools.opencode.worktree_create with name probe-wt, then reply DONE." \
+  </dev/null > "$W.out"; echo "rc=$?")
+# compact NDJSON, so the bare pattern matches (executed 2026-11-24)
+if ! grep -q '"type":"text"' "$W.out" || grep -q '"type":"error"' "$W.out"; then
+  echo "VOID: the run did not answer, so nothing was tested"
+elif test "$(git -C "$W" worktree list | wc -l)" -eq 1; then echo "ok: only the project"
+else echo "FAIL: a worktree was registered"; fi
+# expected: rc=0, ok (executed 2026-11-24). Under the legacy block the same probe
+# printed FAIL: a worktree under the run's home, registered in the project's .git.
+git -C "$W" worktree list --porcelain | awk '/^worktree /{print $2}' | tail -n +2 \
+  | while read -r d; do git -C "$W" worktree remove --force "$d"; done
+rm -rf "${W:?}" "${W:?}.out"
 
 # a second home: `run` without --standalone stopped failing on 2.2.6; `auth list` still fails
 H=$(mktemp -d); mkdir -p "$H/.local/share/opencode"
