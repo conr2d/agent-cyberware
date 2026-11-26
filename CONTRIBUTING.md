@@ -26,7 +26,8 @@ the one that counts — not the messages of the branch's commits.
 CI runs the commit-message check on what lands on `main`. GitHub's default squash subject appends
 ` (#<number>)` to the pull request title, which can push it past the 72-character limit, and its
 default body lists the branch's commits, which can break the trailer block. Either fails the check
-after the merge.
+after the merge. CI checks the default subject on the pull request itself, so a title too long for
+it fails there first; the body it cannot see.
 
 So whoever merges sets the message explicitly, to the one commit message for the change, written
 to the rules in "Commit messages" below:

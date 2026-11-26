@@ -5,6 +5,8 @@ name: gates
 on:
   push:
   pull_request:
+    # `edited` so a retitled pull request re-runs the squash-subject check below
+    types: [opened, synchronize, reopened, edited]
 
 permissions:
   contents: read
@@ -26,18 +28,27 @@ jobs:
           ./.githooks/check-frontmatter.py .
           ./.githooks/check-inventory.py .
 
+      # A branch deletion has no commits of its own, and its run is given the default branch's
+      # tip, so `before..after` would select default-branch history the deletion never added.
       - name: Commit messages
+        if: github.event_name != 'push' || !github.event.deleted
         env:
           BEFORE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           AFTER: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          REF: ${{ github.ref_name }}
+          DEFAULT: ${{ github.event.repository.default_branch }}
         run: |
-          if [ -z "$BEFORE" ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
-            range="$AFTER"            # new branch or first push: every commit reachable
+          if [ -n "$BEFORE" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            set -- "$BEFORE..$AFTER"
+          elif [ "$REF" != "$DEFAULT" ] && git rev-parse -q --verify "origin/$DEFAULT" >/dev/null; then
+            # A new branch: only what it adds. Every commit reachable would include the default
+            # branch's history, so one bad subject already merged fails every new branch forever.
+            set -- "$AFTER" --not "origin/$DEFAULT"
           else
-            range="$BEFORE..$AFTER"
+            set -- "$AFTER"           # the default branch's first push: every commit reachable
           fi
           status=0 n=0
-          for c in $(git rev-list --no-merges "$range"); do
+          for c in $(git rev-list --no-merges "$@"); do
             n=$((n + 1))
             git log -1 --format=%B "$c" > "$RUNNER_TEMP/msg"
             if ! ./.githooks/commit-msg "$RUNNER_TEMP/msg"; then
@@ -45,5 +56,19 @@ jobs:
             fi
           done
           # The hook is silent on success, so without this an empty range passes unseen.
-          echo "checked $n commit message(s) in $range"
+          echo "checked $n commit message(s) in $*"
           exit $status
+
+      # The squash commit's subject defaults to the title plus " (#N)", and that subject is what
+      # `main` keeps. Checking it here fails the pull request instead of `main` after the merge.
+      - name: Squash subject
+        if: github.event_name == 'pull_request'
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+          NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          printf '%s (#%s)\n' "$TITLE" "$NUMBER" > "$RUNNER_TEMP/squash"
+          if ! ./.githooks/commit-msg "$RUNNER_TEMP/squash"; then
+            echo "::error::the default squash subject fails; shorten the pull request title"
+            exit 1
+          fi
