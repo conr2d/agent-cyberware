@@ -179,67 +179,6 @@ example had followed the 2026-10-30 precedent while step 4 of the update procedu
 `SKILL.md` changes only for a shape or a trap. The operator kept the move; the step itself was
 corrected in the entry before this one.
 
-### 2026-11-23 — a host-loopback model needs a bridge inside srt
-
-`opencode.md` gained *A local OpenAI-compatible server* and trap 9. Executed on 2026-11-23 with
-opencode 2.3.2, srt 0.0.81 and socat 1.8.1.3, against an OpenAI-compatible server on the host
-at `127.0.0.1:8080`: every run with `baseURL` at `http://127.0.0.1:8080/v1`, and again at
-`http://localhost:8080/v1`, retried with `.error.type` `provider.transport` and
-`ECONNREFUSED`, and exited 1 with no turn — with `NO_PROXY` empty and with srt's default, which
-lists loopback. In the same sandbox `curl` to that URL returned 200 through srt's proxy. The
-documented fix is a `socat` bridge inside the sandbox, forwarding through `HTTP_PROXY` to the
-host address; that exact wrapper ran, `curl` to the bridge returned 200, and an opencode smoke
-run exited 0 with the shell tool writing and reading a file while `~/.ssh` stayed hidden. The
-four task runs used an earlier wrapper that parsed `HTTP_PROXY` with `sed` to the same two
-values, so both forms ran.
-
-Read, not measured: the provider block's shape and the comment declaring `limit.input`
-required or opencode never compacts; and SQLite's documentation, that WAL mode does not work
-over a network filesystem. Reasoned only: why opencode does not send a loopback URL to the
-proxy where curl does.
-
-`inkling-2-mini-sq-20` (Inkling-2-Mini at `sq-20`, context 262,144) ran the same three author
-tasks and the same design task as `devin.md`'s *How it did as an author*, one run each: 6/6,
-15/16 and 5/6, and 7.5 of 8 on the rubric written before the runs. Its two errors the rubric
-does not score were WAL mode as a SQLite-on-NFS fallback and a reaper keying on `started_at`
-rather than the heartbeat the design defines. Wall times and every hardware-dependent figure
-were left out deliberately: they would not reproduce. One run each, not a ranking.
-
-### 2026-11-24 — opencode's read-only lane denies everything, then allows reads
-
-The finding arrived as another session's handoff. Every executed claim below was re-run here on
-opencode 2.3.2 before it was kept, in a throwaway home with `--standalone` rather than
-the real `~/.config/opencode` that *Verifying this file* assumes; none is the handoff's alone.
-
-Executed: the legacy `permission` object still loads and converts (`bash`→`shell`,
-`task`→`subagent`, each deny becoming `{action, resource: "*", effect}`); `opencode debug agents`
-prints the effective ruleset, last-match over an allow-all base; and the legacy deny block no
-longer holds the lane read-only — the model got `execute` (Code Mode), created a git worktree
-through it and renamed its session, while file writes from inside failed. The native
-`permissions` array that denies `*` and allows the read tools created no worktree and no file,
-and read a file correctly; with `--auto` the shell probe created nothing. Tool lists are the
-model's own report, corroborated by those side effects.
-
-The cold review found the gap that mattered most: **a project `opencode.json` or
-`.opencode/opencode.json` re-allows what the home denies**, because its rules come later in the
-same list. Measured on the ruleset, then fixed: `OPENCODE_DISABLE_PROJECT_CONFIG=1` restored the
-denies, and the lane now sets it. Not checked on a `run`, nor what else the variable disables.
-The review also measured that a legacy and a native key set together concatenate rather than
-override, and the text says so.
-
-Read, not measured: the schema (`permissions` is the ruleset; `provider`, `permission` and
-`tools` are deprecated), the bundled source's last-match rule, Code Mode's permission check on
-`execute` and each inner tool, and the `write`/`patch`/`apply_patch`→`edit` mapping.
-
-Not measured: the native `providers.…settings.provider` OpenRouter form on a request — the
-routing table keeps its legacy-form dates — whether `skill` is refused, a `.env` read or deny,
-and `denyWrite` against worktree registration.
-
-*Verifying this file* gained two probes beside the unchanged permission floor: a ruleset check
-on `opencode debug agents`, and a worktree probe that now also asserts the run answered and
-removes any worktree it made. Each was run as written and against a legacy block as a control:
-`deny` ×4 against `allow` for `execute`, and ok against FAIL.
-
 ### 2026-11-20 — research re-run: quota shapes hold, `MAX_THINKING_TOKENS=0` no longer reliable
 
 Update step 6, by hand, after step 0 (`claude update` found 2.1.329 current, `codex update`
@@ -333,3 +272,64 @@ leaving it for a wholesale refresh was publishing a known-false claim, so the se
 corrected on its own. The sandbox-nesting cause was stated as measured; it is now marked
 inferred. The research entry's "due" is corrected too: the quarter comes round at the end of
 November.
+
+### 2026-11-23 — a host-loopback model needs a bridge inside srt
+
+`opencode.md` gained *A local OpenAI-compatible server* and trap 9. Executed on 2026-11-23 with
+opencode 2.3.2, srt 0.0.81 and socat 1.8.1.3, against an OpenAI-compatible server on the host
+at `127.0.0.1:8080`: every run with `baseURL` at `http://127.0.0.1:8080/v1`, and again at
+`http://localhost:8080/v1`, retried with `.error.type` `provider.transport` and
+`ECONNREFUSED`, and exited 1 with no turn — with `NO_PROXY` empty and with srt's default, which
+lists loopback. In the same sandbox `curl` to that URL returned 200 through srt's proxy. The
+documented fix is a `socat` bridge inside the sandbox, forwarding through `HTTP_PROXY` to the
+host address; that exact wrapper ran, `curl` to the bridge returned 200, and an opencode smoke
+run exited 0 with the shell tool writing and reading a file while `~/.ssh` stayed hidden. The
+four task runs used an earlier wrapper that parsed `HTTP_PROXY` with `sed` to the same two
+values, so both forms ran.
+
+Read, not measured: the provider block's shape and the comment declaring `limit.input`
+required or opencode never compacts; and SQLite's documentation, that WAL mode does not work
+over a network filesystem. Reasoned only: why opencode does not send a loopback URL to the
+proxy where curl does.
+
+`inkling-2-mini-sq-20` (Inkling-2-Mini at `sq-20`, context 262,144) ran the same three author
+tasks and the same design task as `devin.md`'s *How it did as an author*, one run each: 6/6,
+15/16 and 5/6, and 7.5 of 8 on the rubric written before the runs. Its two errors the rubric
+does not score were WAL mode as a SQLite-on-NFS fallback and a reaper keying on `started_at`
+rather than the heartbeat the design defines. Wall times and every hardware-dependent figure
+were left out deliberately: they would not reproduce. One run each, not a ranking.
+
+### 2026-11-24 — opencode's read-only lane denies everything, then allows reads
+
+The finding arrived as another session's handoff. Every executed claim below was re-run here on
+opencode 2.3.2 before it was kept, in a throwaway home with `--standalone` rather than
+the real `~/.config/opencode` that *Verifying this file* assumes; none is the handoff's alone.
+
+Executed: the legacy `permission` object still loads and converts (`bash`→`shell`,
+`task`→`subagent`, each deny becoming `{action, resource: "*", effect}`); `opencode debug agents`
+prints the effective ruleset, last-match over an allow-all base; and the legacy deny block no
+longer holds the lane read-only — the model got `execute` (Code Mode), created a git worktree
+through it and renamed its session, while file writes from inside failed. The native
+`permissions` array that denies `*` and allows the read tools created no worktree and no file,
+and read a file correctly; with `--auto` the shell probe created nothing. Tool lists are the
+model's own report, corroborated by those side effects.
+
+The cold review found the gap that mattered most: **a project `opencode.json` or
+`.opencode/opencode.json` re-allows what the home denies**, because its rules come later in the
+same list. Measured on the ruleset, then fixed: `OPENCODE_DISABLE_PROJECT_CONFIG=1` restored the
+denies, and the lane now sets it. Not checked on a `run`, nor what else the variable disables.
+The review also measured that a legacy and a native key set together concatenate rather than
+override, and the text says so.
+
+Read, not measured: the schema (`permissions` is the ruleset; `provider`, `permission` and
+`tools` are deprecated), the bundled source's last-match rule, Code Mode's permission check on
+`execute` and each inner tool, and the `write`/`patch`/`apply_patch`→`edit` mapping.
+
+Not measured: the native `providers.…settings.provider` OpenRouter form on a request — the
+routing table keeps its legacy-form dates — whether `skill` is refused, a `.env` read or deny,
+and `denyWrite` against worktree registration.
+
+*Verifying this file* gained two probes beside the unchanged permission floor: a ruleset check
+on `opencode debug agents`, and a worktree probe that now also asserts the run answered and
+removes any worktree it made. Each was run as written and against a legacy block as a control:
+`deny` ×4 against `allow` for `execute`, and ok against FAIL.
