@@ -17,6 +17,8 @@ The editorial rule:
 Roles, the loop, the spec contract and the sealing rules are stable and belong in
 `../SKILL.md`. Model ids, config keys and CLI flags rot within weeks and belong in
 `codex-dispatch.md`, behind a command that prints the current value.
+The stable CLI-neutral requirements live in `author-lane.md`, while the flags that meet them
+live in `codex-dispatch.md` for Codex or `agent-cli:non-interactive` for other CLIs.
 
 ### Why the roles are split at all
 
@@ -79,7 +81,9 @@ states why different contexts are required and different models strengthen the s
 ## Update procedure
 
 1. Re-verify everything in `codex-dispatch.md` against the running CLI — the effort key, the
-   flag names, the catalog command. That file is where this skill rots.
+   flag names, the catalog command. That file is where this skill rots. Then re-check the
+   Codex column in `author-lane.md` against `codex-dispatch.md` so the restated coverage does
+   not drift silently.
 2. Any claim in `../SKILL.md` that has become a *mechanism* rather than a rule — because a
    gate, a hook, or another skill now enforces it — moves to `references/` or out entirely. A
    rule with an enforcer elsewhere is a description, and descriptions are what make a skill

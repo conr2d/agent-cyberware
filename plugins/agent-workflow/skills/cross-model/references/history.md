@@ -100,3 +100,22 @@ Splitting the orchestrator from the reviewer and sealer was considered and not d
 operator's choice: the reviewer is the one holding the full context, which is the reason the
 roles are joined. A project that wants review on a particular model puts that model in the
 orchestrator's seat. No new section, so no new inventory row.
+
+### 2026-11-27 — an author lane is a set of requirements, and reviews are evidence
+
+An operator moving orchestration between vendors asked whether a session could derive a
+non-Codex dispatch from this skill. The requirements were embedded in the Codex flags in
+`codex-dispatch.md`. They now stand alone in `author-lane.md`, with a derivation procedure
+that ends in running the derived form and keeping it with the run date and CLI version. The
+first author run stopped before editing because the draft asserted that the Codex calls meet
+every requirement. The table now records the shortfalls. The Codex column was based on a reading
+of `codex-dispatch.md` without rerunning the calls, and an independent review then corrected
+several cells against that file. The CLI-specific columns that would make derivation mechanical
+belong in `agent-cli:non-interactive` as measurements and were left for a separate unit there.
+
+The same operator read the joined orchestrator/reviewer role as possibly forbidding reviews
+outside the orchestrator's session. *Roles* required an independent review for high-risk
+units and left who judges independent findings unstated. It now says reviews may be added as
+the unit warrants and that the orchestrator judges the findings and is accountable for what
+lands. `Reviewed:` now names each review and what was done with its findings. No new section,
+so no new inventory row.
