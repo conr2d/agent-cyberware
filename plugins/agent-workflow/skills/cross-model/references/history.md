@@ -84,3 +84,19 @@ A commit-msg check was not written. No casing convention holds across agents (`o
 lowercase as the tool spells itself), so a gate needs either a comparison against names already
 in history or a maintained list of canonical names; either is the operator's call. The four
 existing commits are left as they are, and the history is not rewritten.
+
+### 2026-11-27 — the orchestrator is a role, not a vendor
+
+An operator setting up another vendor's agent as orchestrator asked whether this skill assumes
+Claude in that seat. It does not: the roles were already written without a vendor, and the one
+Claude string in `SKILL.md` is a trailer example. What did read as vendor-bound were the two
+dispatch pointers, in the opening and in *Going further*, which named only `codex-dispatch.md`.
+The opening paragraph now says no vendor is assumed for either role and that whichever agent
+orchestrates holds the reviewer's duties; both pointers now send the other CLIs that
+`agent-cli:non-interactive` covers to that skill. A review caught the first draft saying "any
+other CLI", which that skill does not cover, and missing the second pointer.
+
+Splitting the orchestrator from the reviewer and sealer was considered and not done, on the
+operator's choice: the reviewer is the one holding the full context, which is the reason the
+roles are joined. A project that wants review on a particular model puts that model in the
+orchestrator's seat. No new section, so no new inventory row.

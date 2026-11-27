@@ -22,9 +22,11 @@ cold, runs the gates, and is accountable for sealing. The long form of that argu
 `references/maintenance.md`.
 
 The current instantiation pairs a code-authoring CLI agent with an orchestrator/reviewer, but
-the pattern generalizes to any capable author paired with a different reviewer. Dispatch
-mechanics — invocation, model, effort — are perishable and live in
-`references/codex-dispatch.md`.
+the pattern generalizes to any capable author paired with a different reviewer, and no vendor
+is assumed for either role: whichever agent orchestrates holds the reviewer's duties below.
+Dispatch mechanics — invocation, model, effort — are perishable: for a Codex author they live
+in `references/codex-dispatch.md`, and for the other CLIs it covers in `agent-cli:non-interactive`
+(in the `agent-cli` plugin).
 
 ## Roles
 
@@ -208,7 +210,8 @@ earned it.
 
 ## Going further
 
-- Dispatching the author — invocation, model, effort → `references/codex-dispatch.md`
+- Dispatching the author — invocation, model, effort → `references/codex-dispatch.md` for a
+  Codex author; `agent-cli:non-interactive` for the other CLIs it covers
 - Reading a stage-3 diff, and what reading one cannot reach → `references/diff-review.md`
 - Why an agent's line names a model at all → `references/attribution.md`
 - The commit message and which trailers earn their line →
