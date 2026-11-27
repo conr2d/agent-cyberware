@@ -21,7 +21,8 @@ Shapes and traps are stable and belong in `../SKILL.md`. Facts (versions, slugs,
 config keys) belong behind a command in `verify.md`. Recommendations that are useful but
 perishable go in `models.md` with a date on them.
 
-**A fourth tier exists as of 2026-08-27: opt-in files.** `opencode.md`, `hermes.md`,
+**Opt-in files exist as of 2026-08-27** — the same tier as the other references by cost, and
+different only in what opens them. `opencode.md`, `hermes.md`,
 `grok.md`, `devin.md`, `sandboxed.md` and `agy.md` are each referenced from `../SKILL.md` by a single line
 and opened only when the caller has named the thing they cover. Everything about them — surface,
 traps, config, probes — lives in the one file, so a standard pass neither runs their probes nor

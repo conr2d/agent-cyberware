@@ -179,6 +179,100 @@ example had followed the 2026-10-30 precedent while step 4 of the update procedu
 `SKILL.md` changes only for a shape or a trap. The operator kept the move; the step itself was
 corrected in the entry before this one.
 
+### 2026-11-20 — research re-run: quota shapes hold, `MAX_THINKING_TOKENS=0` no longer reliable
+
+Update step 6, by hand, after step 0 (`claude update` found 2.1.329 current, `codex update`
+moved 0.170.0 to 0.171.0). Prompted by the second tier pass, which found the quarterly re-run coming due at the end of
+November. The figures are recorded in `research.md` beside the sections they re-measure.
+
+Verified by execution:
+- Claude's `rate_limit_event` shape holds, and each window now carries a `status`.
+  `--output-format json` still has no rate-limit key.
+- Codex's rollout shape holds, with a new `limit_name` key. `--ephemeral` still leaves no
+  rollout, and statusLine still does not fire under `-p`.
+- Per-spawn latency on `haiku` and `gpt-6-luna`.
+- **`MAX_THINKING_TOKENS=0` beside `--effort low` read zero thinking on four runs of eight**, so
+  it is no longer the reliable lever it was measured as. `verify.md`'s block already asks the
+  reader to check `thinking_tokens` rather than trust the knob, so it stands. **`models.md`'s
+  sentence saying the variable turns thinking off does not**, and it is left for the next
+  update pass's wholesale refresh, per step 3, rather than patched here.
+
+Read, not run: headless-cli from the GitHub API. It is unchanged in every respect the decision
+rested on.
+
+**Not re-measured:**
+- The Codex pull endpoint. This session's permission layer refused the authenticated call
+  before it was sent.
+- The `premium` bucket and the 100.0 finding, which need a limit hit.
+- Resident-mode latency.
+- Everything agy, on terms grounds.
+
+The quota readers did not go stale a second time, so the open question on making them
+caller-facing keeps its revisit condition unmet.
+
+### 2026-11-20 — agy refresh: 1.5.13 verified, denied-tool trap holds, resident latency measured
+
+Agy coverage refreshed by an agy session driving agy, completing the research re-run. Update step 0
+confirmed `agy update` reports current at 1.5.13 before and after.
+
+Verified by execution:
+- Every probe in `agy.md` ran against 1.5.13. The stdin drop when `-p` is passed, the plain-text stdin
+  prompt without `-p`, the three loud argv mistakes (exit 2), the quiet bad stream event (exit 0, `init` only),
+  and the loud bad model slug (exit 1, `.error`) all hold as documented.
+- **The denied-tool trap holds.** Without `--dangerously-skip-permissions`, a tool-using print run exits 0
+  with `status: "SUCCESS"`, response `""`, no `.error` key, `.denied_actions` naming `action: "command"`
+  (`display_name: "Bash"` on 1.5.13, was `"RunCommand"` on 1.4.2), and the diagnostic on stderr. In
+  `stream-json`, status remained `SUCCESS` in both samples. Control with `--dangerously-skip-permissions`
+  (either position) executes cleanly and returns output. The three-part success check stands.
+- All six model slugs in `agy models` were invoked and answered with exit 0. Effort conflicts and invalid
+  effort values exit 1 with `.error`. Ladder stands with `gemini-3.8-flash-low` fast, `gemini-3.8-flash-high` default.
+- Per-spawn latency on `gemini-3.8-flash-low` averaged 8.5s wall (7.6–9.7s) with a ~1KB prompt; resident
+  `stream-json` measured TTFT 2.4–4.6s and complete 3.0–4.7s.
+- Streaming shape holds: text streams inside `step_update` (`step_type == "agent_response"`, `.text_delta`).
+- Quota check confirmed none found: neither JSON envelope, stream-json events, nor local config files
+  surface quota or rate limits.
+
+Read, not run: Antigravity Additional Terms of Service section 6. The prohibited conduct clauses are
+unchanged, leaving the terms judgement date extended.
+
+Not run: none for agy.
+
+
+### 2026-11-20 — agy refresh review: probes need a plain shell, and the evidence goes back in
+
+A cold review of the agy refresh above, by a session of another vendor that does not drive agy.
+
+**The refresh ran twice.** The first agy session ran inside srt. There, the denied-tool probe
+came back with no `.denied_actions` and a tool failure explained in `.response`. That run's
+commit rewrote the success check, the trap and the probe to match. The review attributed it to
+agy's own sandbox failing to nest under srt, the same shape as Codex's in `sandboxed.md`, so
+that nothing was denied and nothing reported a denial. That cause is inferred and was not isolated. The second session ran from a plain shell,
+and the trap held as documented. That commit replaced the first, which is not in this history
+because it was never sealed. `agy.md` now states the environment beside its stamp and says to
+run its probes outside any outer sandbox.
+
+**Evidence restored.** The second commit still deleted the evidence behind two of `agy.md`'s
+rules: the twelve-listing drift measurement and the operator's two re-reads (behind *verify a
+pinned slug by invoking it*), and the two mid-pass self-update dates (behind *pin the model*).
+That was the refresh prompt's doing: it asked for *Models and effort* to be refreshed as a
+whole, meaning the values, not the record. The passages are back as they were, with the
+2026-11-20 result above them.
+
+**Quota downgraded from none to not yet ruled out.** The refresh saw an internal
+`retrieveUserQuotaSummary` call in agy's debug log. Whether `--log-file` records that call's
+response was not checked, so the entry above saying nothing was left unrun is not accurate
+on this point.
+
+Reasoned and edited by the reviewer; nothing re-executed. A probe of the `--log-file`
+question has to come from agy or from a person.
+
+An independent review by another model family found two more things. `models.md` still said
+`MAX_THINKING_TOKENS=0` turns thinking off, which the research re-run above had shown false;
+leaving it for a wholesale refresh was publishing a known-false claim, so the sentence is now
+corrected on its own. The sandbox-nesting cause was stated as measured; it is now marked
+inferred. The research entry's "due" is corrected too: the quarter comes round at the end of
+November.
+
 ### 2026-11-23 — a host-loopback model needs a bridge inside srt
 
 `opencode.md` gained *A local OpenAI-compatible server* and trap 9. Executed on 2026-11-23 with

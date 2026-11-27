@@ -6,7 +6,7 @@
 > itself, or when you are writing a script or a CI job a person will run. Nothing in
 > `../SKILL.md` assumes any of it.
 
-**The terms judgement, 2026-08-31. Read from the published agreement, not verified with the
+**The terms judgement, 2026-08-31, re-read 2026-11-20. Read from the published agreement, not verified with the
 vendor** — a document-grade claim, weaker than the executed ones below, and the kind that
 changes without notice. Re-read it before relying on this file. Antigravity's Additional Terms
 of Service, section 6, *Prohibited Conduct*, carries two clauses that bear on a driver:
@@ -30,8 +30,12 @@ third-party client; the second is not, and it is sufficient on its own. Auth clo
 escape: agy is **OAuth only**, so there is no API-key path that would make the account something
 other than a subscription being used by a foreign product.
 
-**Everything below was executed, not read off `--help`. Last verified: 2026-10-20** (agy 1.4.2;
-first written on 1.1.16).
+**Everything below was executed, not read off `--help`. Last verified: 2026-11-20** (agy 1.5.13,
+from a plain shell with no outer sandbox; first written on 1.1.16). **Run these probes outside
+any outer sandbox.** On 2026-11-20 a first run under srt saw the denied-tool probe return no
+`.denied_actions` and a tool failure explained in `.response`, while the plain-shell run showed
+the trap as documented. That agy's own sandbox failing to nest under srt is the cause is
+inferred, by analogy with Codex in `sandboxed.md`, and was not isolated.
 The probes are at the end of this file rather than in `verify.md`, so a standard pass neither
 runs them nor is made wrong by them going stale.
 
@@ -94,12 +98,12 @@ to name.
 tool-using print run exits **0** with `status: "SUCCESS"`, an empty `.response` and no `.error`
 — it clears both the exit code and the status check having done nothing. Since some release
 after 1.1.22 the envelope does carry the denial, as `"denied_actions":
-[{"action":"command","display_name":"RunCommand"}]`, in `json` and on the stream-json `result`
-alike; before that the only diagnostic was on stderr. The status is no more dependable than it
-was: on 1.1.22 the stream-json denial sometimes came back `CANCELED`, and on 1.4.2 it was
-`SUCCESS` in all four samples. **Check the empty `.response` and the presence of
-`.denied_actions`**, not the status. Add the flag (either position relative to the print flags)
-or a `permissions.allow` rule in `settings.json`.
+[{"action":"command","display_name":"Bash"}]` (was `"RunCommand"` on 1.4.2), in `json` and
+on the stream-json `result` alike; before that the only diagnostic was on stderr. The status
+is no more dependable than it was: on 1.1.22 the stream-json denial sometimes came back
+`CANCELED`, while on 1.4.2 and 1.5.13 it was `SUCCESS` across all samples. **Check the empty
+`.response` and the presence of `.denied_actions`**, not the status. Add the flag (either
+position relative to the print flags) or a `permissions.allow` rule in `settings.json`.
 
 **agy's stream-json input uses `event`, not `type`**, as
 `{"event":"user","message":{"role":"user","content":"..."}}`. An unrecognised event *value*
@@ -125,30 +129,31 @@ claude-opus-4-6-thinking
 gpt-oss-120b-medium
 ```
 
-**That is the whole catalogue on 2026-10-20, agy 1.4.2**, identical across six consecutive
-`agy models` calls. The 3.7, 3.6 and 3.5 flash families and both `gemini-3.1-pro` rows are gone,
-and invoking `gemini-3.7-flash-low`, `gemini-3.7-flash-high` or `gemini-3.1-pro-high` exits 1
-with `status: "ERROR"` and `.error` printing the list agy will serve. Six listings agreeing is
-not stability: on 2026-08-31, agy 1.1.22, the 3.5 family was present in three of twelve
-consecutive listings and absent from the other nine, and `--model` tracked the listing rather
-than the documentation (two of eight pinned runs succeeded). So a slug read back from
-`agy models` is not a contract — **verify a pinned slug by invoking it, not by listing it.** The
-failure is loud, which is why it is here rather than above; what it costs is a driver that
-worked yesterday and a retry that fixes it, or, as with the 3.7 rows here, a driver whose every
-call now fails.
+**That is the whole catalogue on 2026-11-20, agy 1.5.13.** All six slugs were invoked, and
+all exited 0. The 3.7, 3.6 and 3.5 flash families and both `gemini-3.1-pro` rows remain gone.
+An unlisted or unsupported slug exits 1 with `status: "ERROR"` and `.error` printing the list
+agy will serve.
+
+Listings agreeing is not stability. On 2026-08-31, agy 1.1.22, the 3.5 family was present in
+three of twelve consecutive listings and absent from the other nine, and `--model` tracked the
+listing rather than the documentation (two of eight pinned runs succeeded). So a slug read back
+from `agy models` is not a contract — **verify a pinned slug by invoking it, not by listing
+it.** The failure is loud, which is why it is here rather than above. What it costs is a driver
+that worked yesterday and a retry that fixes it, or, as with the 3.7 rows by 2026-10-20, a
+driver whose every call now fails.
 
 Re-read 2026-10-30 on agy 1.4.10, run by the operator rather than an agent: the same six rows.
 Re-read 2026-11-10 on agy 1.5.3, also by the operator, in a single listing: the same six rows.
 
 With no `--model`, an unpinned run's `init` event omits `model` entirely, so the default is not
-readable back from the envelope (observed on 1.1.16, 1.1.18, 1.1.22 and 1.4.2); a pinned run's
+readable back from the envelope (observed on 1.1.16, 1.1.18, 1.1.22, 1.4.2, and 1.5.13); a pinned run's
 `init` does name it. **Pin the model explicitly** — the default has rolled before, and agy
 updates itself without being asked, so the version you tested against is not necessarily the
 one that runs. It self-updated mid-pass on both 2026-08-22 and 2026-08-27.
 
 **Where agy sits on the fast / default / strong ladder**, for a caller routing by complexity
 hint the way `models.md` describes for the other two: `gemini-3.8-flash-low` is fast,
-`gemini-3.8-flash-high` default. No Gemini pro row is served on 1.4.2, so the strong rung that
+`gemini-3.8-flash-high` default. No Gemini pro row is served on 1.5.13, so the strong rung that
 was `gemini-3.1-pro-high` is unfilled; whether `claude-opus-4-6-thinking` should take it has not
 been established here.
 
@@ -194,11 +199,12 @@ echo '{"event":"userr","message":{"role":"user","content":"say OK"}}' \
 agy -p "Run the shell command: echo TOOLRAN. Then reply with its output." \
   --model gemini-3.8-flash-low --output-format json
 # expected: exit 0, status SUCCESS, response "", NO .error key, .denied_actions naming
-# "command", and on stderr "jetski: no output produced — a tool required the \"command\"
-# permission…". In stream-json the status was sometimes CANCELED on 1.1.22 — sample it more
-# than once before concluding either value is fixed. If .error comes back, or the exit code is
-# 1, the envelope has gone loud and the trap above can go; if .denied_actions disappears, the
-# success column of the output table loses its third check.
+# "command" (display_name "Bash" on 1.5.13; was "RunCommand" on 1.4.2), and on stderr
+# "jetski: no output produced — a tool required the \"command\" permission…". In stream-json
+# the status was sometimes CANCELED on 1.1.22 — sample it more than once before concluding
+# either value is fixed. If .error comes back, or the exit code is 1, the envelope has gone
+# loud and the trap above can go; if .denied_actions disappears, the success column of the
+# output table loses its third check.
 # Control: add --dangerously-skip-permissions and it must return SUCCESS with the tool output,
 # in either flag position.
 
