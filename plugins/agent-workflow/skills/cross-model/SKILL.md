@@ -22,9 +22,11 @@ cold, runs the gates, and is accountable for sealing. The long form of that argu
 `references/maintenance.md`.
 
 The current instantiation pairs a code-authoring CLI agent with an orchestrator/reviewer, but
-the pattern generalizes to any capable author paired with a different reviewer. Dispatch
-mechanics — invocation, model, effort — are perishable and live in
-`references/codex-dispatch.md`.
+the pattern generalizes to any capable author paired with a different reviewer, and no vendor
+is assumed for either role: whichever agent orchestrates holds the reviewer's duties below.
+`references/author-lane.md` states what every author dispatch must meet and how to derive a
+call for another CLI using `agent-cli:non-interactive` (in the `agent-cli` plugin) where it
+covers that CLI. The perishable mechanics for Codex are in `references/codex-dispatch.md`.
 
 ## Roles
 
@@ -47,8 +49,11 @@ architecture invariants, conformance rules.
 
 - Writes the airtight spec, dispatches the author, then **reviews the full diff cold**, runs
   the verification battery + conformance gates, folds fixes, and **seals** (commits) the unit.
-- For high-risk units, adds an **independent third-agent review** — a dedicated
-  reviewer/architect agent, not the author and not itself — on top of its own before sealing.
+- Adds **independent reviews** as the unit's nature and risk warrant, always for high-risk
+  units. Each reviewer is distinct from the author and orchestrator, with a fresh context and
+  a different model where available. The orchestrator weighs the evidence, decides which
+  findings stand, folds fixes and seals. `Reviewed:` names each review and what was done
+  with its findings.
 - Owns all git history. The author's output is raw material; the reviewer is accountable for
   what lands.
 
@@ -70,7 +75,8 @@ thing — one intent line; if it needs "and", split it.
              (the unit-seal gate). Records evidence.
 5. FIX       Discrepancies → either a tightened follow-up spec back to the author,
              or a direct reviewer fix for trivia. Re-verify.
-6. (RISK)    High-risk unit → independent third-agent review pass before sealing.
+6. (RISK)    Independent review as warranted, always for high-risk units.
+             Fold fixes and re-verify before sealing.
 7. SEAL      Reviewer commits the unit with the trailers that apply (incl. `Reviewed:`).
              Author never seals.
 ```
@@ -208,7 +214,9 @@ earned it.
 
 ## Going further
 
-- Dispatching the author — invocation, model, effort → `references/codex-dispatch.md`
+- What every author dispatch must meet and how to derive one for another CLI →
+  `references/author-lane.md`
+- Dispatching a Codex author — invocation, model, effort → `references/codex-dispatch.md`
 - Reading a stage-3 diff, and what reading one cannot reach → `references/diff-review.md`
 - Why an agent's line names a model at all → `references/attribution.md`
 - The commit message and which trailers earn their line →

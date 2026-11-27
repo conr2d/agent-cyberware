@@ -6,6 +6,9 @@ than the source it prints an age along with the value, and the age is part of th
 catalog block below is one such, and the note beside it says which invocations were measured not
 to refresh it. The stable part is in `../SKILL.md`; this file is the current instantiation.
 
+`author-lane.md` states the CLI-neutral dispatch requirements and where these calls fall
+short, while this file shows how to drive Codex toward those requirements.
+
 **What follows is what is specific to dispatching an *author* under this workflow, plus the
 subprocess traps the calls below depend on.** The general problem — how to drive a coding-agent
 CLI from a subprocess at all, and which of its failures are silent — is out of scope here. It is
