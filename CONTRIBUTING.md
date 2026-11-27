@@ -19,21 +19,26 @@ commit subjects or trailer blocks; see [AGENTS.md](AGENTS.md) for detail.
 
 ## Pull requests
 
-`main` is protected: a direct push is refused, so every change lands through a pull request. The
-only merge method is squash, which means the squash commit is what `main` keeps and its message is
-the one that counts — not the messages of the branch's commits.
+`main` is protected: a direct push is refused, so every change lands through a pull request.
+**Squash is the default merge method**: the squash commit is what `main` keeps, and its message is
+the one that counts — not the messages of the branch's commits. Rebase is allowed when a pull
+request's commits are each worth keeping apart on `main`. Then every commit lands as written, with
+no ` (#<number>)` suffix, so each must already be a message to the rules in "Commit messages"
+below; the pull request's own CI has checked them.
 
 CI runs the commit-message check on what lands on `main`. GitHub's default squash subject appends
 ` (#<number>)` to the pull request title, which can push it past the 72-character limit, and its
 default body lists the branch's commits, which can break the trailer block. Either fails the check
 after the merge. CI checks the default subject on the pull request itself, so a title too long for
-it fails there first; the body it cannot see.
+it fails there first; the body it cannot see. It checks the title on every pull request, since
+which method a merge will use is not known before it.
 
-So whoever merges sets the message explicitly, to the one commit message for the change, written
+So whoever squashes sets the message explicitly, to the one commit message for the change, written
 to the rules in "Commit messages" below:
 
 ```sh
 gh pr merge <number> --squash --subject "<subject>" --body "<body>"
+gh pr merge <number> --rebase        # only when the commits are each worth keeping
 ```
 
 ## Commit messages
