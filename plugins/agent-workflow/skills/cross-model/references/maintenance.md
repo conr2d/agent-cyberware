@@ -94,8 +94,11 @@ states why different contexts are required and different models strengthen the s
    clause, never a reason to grow the passage around it.
 5. **Never write a line number, in this file or any other.** Name the section. Quote a past
    value in words. `./.githooks/check-citations.py --show` prints a skill's shape for reading,
-   and the pre-commit hook refuses a `:N`, a `file.md:N`, or an *N lines* claim in any tracked
-   Markdown, judged against a checkout of the index. There is no exemption for dated entries:
+   and the pre-commit hook refuses a `:N`, a `file.md:N` and a line anchor in any tracked
+   Markdown, judged against a checkout of the index. It refuses an *N lines* claim only where the
+   paragraph or the table row itself names its subject — `SKILL.md`, *this skill*, or a skill's
+   name in backticks — or in a table row after a sentence that does. A count anywhere else passes, and keeping it out
+   is this rule's job, not the gate's. There is no exemption for dated entries:
    one was tried, and a review found it covered exactly the region where the defect kept coming
    back.
 6. Append to `history.md`, newest last: what moved, what was verified by execution, and what is
