@@ -45,7 +45,7 @@ can only see that a row is present; whether it is true is what a pass reads for.
 | section | why this skill is its only carrier |
 |---|---|
 | The tiers, and what each costs | The canonical statement of the model. A repository's `AGENTS.md` renders it for someone writing there, in that repository's own terms and examples; this is the one against which those renderings are checked, and the only one that travels to a repository holding no rendering at all. |
-| The three admission tests | Four different formulations were in circulation, across several `AGENTS.md` and maintenance files, and a session applied whichever it had read. This is the one place they are unified and ordered. |
+| The three admission tests | Four different formulations were in circulation, across several `AGENTS.md` and maintenance files, and a session applied whichever it had read. This is the one place they are unified and ordered. Test 3 carries the practice/measurement split because a measurement skill is made of values, and without the split the test condemns the stamp that makes such a skill trustworthy. |
 | The pass | The procedure has no other home — no script runs it, and the one gate that exists covers a single step of it. Steps are not self-explanatory, so a compressed list would be improvised. It also carries the only check on whether a host repository's rendering of the model still matches this one, which nothing mechanical can reach. |
 | What this pass must not do | Each entry is a mistake a restructuring pass actively invites — most of all pruning the history, which looks like exactly the cleanup this skill is for. |
 | Going further | The pointers to tiers 3 and 4, and the only route to them from an installed skill. |
@@ -57,7 +57,9 @@ can only see that a row is present; whether it is true is what a pass reads for.
    *finding* from running the pass is a history entry, not a new section.
 3. Any addition to `../SKILL.md` adds its row to the inventory above in the same commit.
 4. **Never write a line number, here or anywhere.** Name the section. The pre-commit refuses a
-   `:N`, a `file.md:N`, and an *N lines* claim in any tracked Markdown.
+   `:N`, a `file.md:N` and a line anchor in any tracked Markdown, but an *N lines* claim only
+   where its paragraph or its own table row names a subject, or the row follows a sentence that
+   does. A count anywhere else passes, and keeping it out is this rule's job, not the gate's.
 5. Append to `history.md`, newest last: what moved, what was established by running the pass,
    and what is reasoned. **Keep an entry to about forty lines.** One that will not fit is
    asking for its own reference file. Title it with what was decided or found, since the
